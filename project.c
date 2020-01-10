@@ -32,7 +32,7 @@ int main() {
 
 
 	while (1) {
-		printf("Please enter an instruction: ");
+		printf("%s@%s: ", expandEnv("$USER"), expandEnv("$MACHINE"));
 
 		// loop reads character sequences separated by whitespace
 		do {
@@ -79,7 +79,8 @@ int main() {
 		printTokens(&instr);
 		clearInstruction(&instr);
 
-		printf(expandEnv("$PATH\n"));
+		// Testing expandEnv function
+		printf("%s\n", expandEnv("$USER"));
 	}
 
 	return 0;
