@@ -30,10 +30,11 @@ int main() {
 	instr.tokens = NULL;
 	instr.numTokens = 0;
 
+	char * tempUser = expandEnv("$USER");
+	char * tempMachine = expandEnv("$MACHINE");
 
 	while (1) {
-		char * tempUser = expandEnv("$USER");
-		char * tempMachine = expandEnv("$MACHINE");
+
 		printf("%s@%s: ", tempUser, tempMachine);
 
 		// loop reads character sequences separated by whitespace
