@@ -32,7 +32,9 @@ int main() {
 
 
 	while (1) {
-		printf("%s@%s: ", expandEnv("$USER"), expandEnv("$MACHINE"));
+		char * tempUser = expandEnv("$USER");
+		char * tempMachine = expandEnv("$MACHINE");
+		printf("%s@%s: ", tempUser, tempMachine);
 
 		// loop reads character sequences separated by whitespace
 		do {
