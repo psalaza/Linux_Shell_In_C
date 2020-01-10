@@ -20,6 +20,7 @@ void addToken(instruction* instr_ptr, char* tok);
 void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
 void addNull(instruction* instr_ptr);
+char* expandEnv(const char * name);
 
 int main() {
 	char* token = NULL;
@@ -77,9 +78,26 @@ int main() {
 		addNull(&instr);
 		printTokens(&instr);
 		clearInstruction(&instr);
+
+		printf(expandEnv("$PATH\n"));
 	}
 
 	return 0;
+}
+
+char* expandEnv(const char * name) {
+	char tempname[strlen(name - 1)];
+	int i;
+	for(i = 1; i < strlen(name); i++) {
+		tempname[i - 1] = name[i];
+	}
+
+	if (getenv(tempname)){
+		return getenv(tempname);
+	}
+	else {
+		return NULL;
+	}
 }
 
 //reallocates instruction array to hold another token
