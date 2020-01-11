@@ -89,6 +89,7 @@ int main() {
 
 
 //ECHO BUILT-IN function and user error check when user inputs invalid commands
+//this function should really be named differently.. please read the extended description I have for my latest commit. 
 void enviromentalVars(instruction* instr_ptr){
 
     if(strcmp((instr_ptr->tokens)[0],"echo") == 0){
@@ -114,6 +115,9 @@ void enviromentalVars(instruction* instr_ptr){
         }
 
     }
+    //else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
+    
+    //}
     else{
 		printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
 		
