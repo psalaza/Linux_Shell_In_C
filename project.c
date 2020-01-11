@@ -30,12 +30,9 @@ int main() {
 	instr.tokens = NULL;
 	instr.numTokens = 0;
 
-	char * tempUser = expandEnv("$USER");
-	char * tempMachine = expandEnv("$MACHINE");
-
 	while (1) {
 
-		printf("%s@%s: ", tempUser, tempMachine);
+		printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
 
 		// loop reads character sequences separated by whitespace
 		do {
@@ -82,26 +79,20 @@ int main() {
 		printTokens(&instr);
 		clearInstruction(&instr);
 
-		// Testing expandEnv function
-		printf("%s\n", expandEnv("$USER"));
 	}
 
 	return 0;
 }
 
+// Function to return any proper environmental variable value
 char* expandEnv(const char * name) {
-	char tempname[strlen(name - 1)];
-	int i;
-	for(i = 1; i < strlen(name); i++) {
-		tempname[i - 1] = name[i];
-	}
 
-	if (getenv(tempname)){
-		return getenv(tempname);
-	}
-	else {
-		return NULL;
-	}
+	char subbuff[strlen(name)];
+	memcpy( subbuff, &name[1], strlen(name));
+	subbuff[strlen(name)] = '\0';
+	char * value = getenv(subbuff);
+	return value;
+
 }
 
 //reallocates instruction array to hold another token
