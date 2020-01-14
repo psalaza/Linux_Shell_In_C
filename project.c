@@ -21,7 +21,7 @@ void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
 void addNull(instruction* instr_ptr);
 char* expandEnv(const char * name);
-void enviromentalVars(instruction* instr_ptr);
+void inputAction(instruction* instr_ptr);
 
 int main() {
     char* token = NULL;
@@ -76,7 +76,7 @@ int main() {
             temp = NULL;
         } while ('\n' != getchar());    //until end of line is reached
 
-        enviromentalVars(&instr);
+        inputAction(&instr);
 
         addNull(&instr);
        // printTokens(&instr);                 // <----- 	COMMENTED OFF TOKEN PRINTING
@@ -88,40 +88,34 @@ int main() {
 }
 
 
-//ECHO BUILT-IN function and user error check when user inputs invalid commands
-//this function should really be named differently.. please read the extended description I have for my latest commit. 
-void enviromentalVars(instruction* instr_ptr){
+// echo function now works and error checks for all possible environmental variables
+// Renamed function
+void inputAction(instruction* instr_ptr){
 
     if(strcmp((instr_ptr->tokens)[0],"echo") == 0){
 
 
         int i;
         for (i = 1; i < instr_ptr->numTokens; i++) {
-            if(strcmp((instr_ptr->tokens)[i],"$USER") == 0)
-                printf("%s ",getenv("USER"));
-            else if(strcmp((instr_ptr->tokens)[i],"$PATH") == 0)
-                printf("%s ",getenv("PATH"));
-            else if(strcmp((instr_ptr->tokens)[i],"$HOME") == 0)
-                printf("%s ",getenv("HOME"));
-            else if(strcmp((instr_ptr->tokens)[i],"$SHELL") == 0)
-                printf("%s ",getenv("SHELL"));
-            else if(strcmp((instr_ptr->tokens)[i],"$PWD") == 0)
-                printf("%s ",getenv("PWD"));
-            else if((instr_ptr->tokens[i])[0] == '$'){
-                printf("NO SUCH COMMAND EXISTS ");
-            }
+            if(((instr_ptr->tokens)[i][0]) == '$') {
+							if (expandEnv((instr_ptr->tokens)[i]) == NULL) {
+								printf("NO SUCH COMMAND EXISTS ");
+							}
+							else {
+								printf("%s ",expandEnv((instr_ptr->tokens)[i]));
+							}
+						}
             else
                 printf("%s ", (instr_ptr->tokens[i]));
         }
 
     }
     //else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
-    
+
     //}
-    else{
+    else {
 		printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
-		
-	}
+		}
 
     printf("\n");
 }
