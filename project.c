@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <unistd.h>
 typedef struct
 {
     char** tokens;
@@ -22,7 +22,10 @@ void clearInstruction(instruction* instr_ptr);
 void addNull(instruction* instr_ptr);
 char* expandEnv(const char * name);
 void inputAction(instruction* instr_ptr);
-
+char* path(const char * name);
+char * checkForPath(char *extra);
+int fileExist(char * absolutePath);
+void my_execute(char **cmd);
 int main() {
     char* token = NULL;
     char* temp = NULL;
@@ -91,37 +94,237 @@ int main() {
 // echo function now works and error checks for all possible environmental variables
 // Renamed function
 void inputAction(instruction* instr_ptr){
+	int i;
+	char *check;
+	char * recieve;
+	
+	
+	
 
-    if(strcmp((instr_ptr->tokens)[0],"echo") == 0){
+
+		if (strcmp((instr_ptr->tokens)[0], "echo") == 0) {
 
 
-        int i;
-        for (i = 1; i < instr_ptr->numTokens; i++) {
-            if(((instr_ptr->tokens)[i][0]) == '$') {
-							if (expandEnv((instr_ptr->tokens)[i]) == NULL) {
-								printf("NO SUCH COMMAND EXISTS ");
-							}
-							else {
-								printf("%s ",expandEnv((instr_ptr->tokens)[i]));
-							}
-						}
-            else
-                printf("%s ", (instr_ptr->tokens[i]));
-        }
+			
+			for (i = 1; i < instr_ptr->numTokens; i++) {
+				if (((instr_ptr->tokens)[i][0]) == '$') {
+					if (expandEnv((instr_ptr->tokens)[i]) == NULL) {
+						printf("NO SUCH COMMAND EXISTS ");
+					}
+					else {
+						printf("%s ", expandEnv((instr_ptr->tokens)[i]));
+					}
+				}
+				else
+					printf("%s ", (instr_ptr->tokens[i]));
+			}
 
-    }
-    //else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
-
-    //}
-    else {
-		printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
 		}
+		//else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
+
+		//}
+		else {
+			for (i = 0; i < instr_ptr->numTokens; i++) {
+				if ((instr_ptr->tokens)[i] != NULL) {
+
+					check = strrchr(instr_ptr->tokens[i], '/');
+
+					if (check == NULL) {
+							recieve = checkForPath(instr_ptr->tokens[i]);
+
+						
+					}
+					else {
+						recieve = path(instr_ptr->tokens[i]);
+
+
+					}
+					//if (strcmp(recieve, instr_ptr->tokens[i]) == 0) {
+					//}
+					if (recieve != NULL) {
+						instr_ptr->tokens[i] = (char *)malloc((strlen(recieve) + 1) * sizeof(char));
+						strcpy(instr_ptr->tokens[i], recieve);
+						
+					}
+					else { break; }
+				}
+
+			}
+			if (recieve != NULL) {
+				my_execute(instr_ptr->tokens);
+			}
+			//printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
+		}
+	
 
     printf("\n");
 }
 
+char* path(const char * name) {
+	int i;
+	int fullString = 1;
+	int catch22 = 0;
+	int begining = 0;
+	char *ptr;
+	char *file;
+	char *finisher;
+	char **incompletePath;
+	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
+	for (i = 0; i < strlen(name) + 1; i++) {
+
+		//pull out special characters and make them into a separate token in the instruction
+		if (name[i] == '/' || name[i] == '\0') {
+
+			i++;
+			memcpy(holder, name + begining, i - begining);
+			holder[i - begining] = '\0';
+
+			if (catch22 == 0) {
+				incompletePath = (char**)malloc(sizeof(char*));
+			}
+			else {
+				incompletePath = (char**)realloc(incompletePath, (catch22 + 1) * sizeof(char*));
+			}
+			
+			file = strrchr(holder, '.');
+			if (strcmp(holder, "./") == 0) {
+				//printf("%s\n", "1");
+				incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + 2) * sizeof(char));
+				strcpy(incompletePath[catch22], getenv("PWD"));
+				strcat(incompletePath[catch22], "/");
+			}
+			else if (strcmp(holder, "../") == 0) {
+				//	printf("%s\n", "2");
+
+				char* pWD = getenv("PWD");
+				ptr = strrchr(pWD, '/');
+
+				*ptr = '\0';
+				incompletePath[catch22] = (char *)malloc((strlen(pWD) + 2) * sizeof(char));
+				strcpy(incompletePath[catch22], pWD);
+				strcat(incompletePath[catch22], "/");
+				*ptr = '/';
+			}
+			else if (file != NULL && name[i - 1] != '\0') {
+				printf("%s\n", "there is a file where it is not suppose to be there");
+				return;
+			}
+			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {
+				//	printf("%s\n", "3");
+				incompletePath[catch22] = (char *)malloc((strlen(getenv("HOME")) + 2) * sizeof(char));
+				strcpy(incompletePath[catch22], getenv("HOME"));
+				strcat(incompletePath[catch22], "/");
+			}
+			else if ((strcmp(holder, "/") == 0) && catch22 == 0) {
+				//	printf("%s\n", "4");
+				if (getenv("ROOT") != NULL) {
+					incompletePath[catch22] = (char *)malloc((strlen(getenv("ROOT")) + 2) * sizeof(char));
+					strcpy(incompletePath[catch22], getenv("ROOT"));
+
+				}
+				else {
+					incompletePath[catch22] = (char *)malloc(2 * sizeof(char));
+				}
+				strcat(incompletePath[catch22], "/");
+			}
+			else {
+				//printf("%s\n", "1");
+				if (catch22 == 0) {
+					incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + strlen(holder) + 2) * sizeof(char));
+					strcpy(incompletePath[catch22], getenv("PWD"));
+					strcat(incompletePath[catch22], "/");
+					strcat(incompletePath[catch22], holder);
+				}
+				else {
+					incompletePath[catch22] = (char *)malloc((strlen(holder) + 2) * sizeof(char));
+					strcpy(incompletePath[catch22], holder);
+				}
+
+			}
+			catch22++;
+			begining = i;
+		}
 
 
+	}
+
+	for (i = 0; i < catch22; i++) {
+		if ((incompletePath)[i] != NULL)
+			fullString += (strlen(incompletePath[i]));
+		if (i == 0) {
+			finisher = (char *)malloc((fullString) * sizeof(char));
+			strcpy(finisher, incompletePath[i]);
+		}
+		else
+		{
+			finisher = (char *)realloc(finisher, (fullString) * sizeof(char));
+			strcat(finisher, incompletePath[i]);
+		}
+
+	}
+	if (fileExist(finisher) == 1) {
+		return finisher;
+	}
+	printf("can't find file");
+	return NULL;
+
+
+}
+
+char * checkForPath(char *extra) {
+	int i;
+	int begining = 0;
+	int count = 0;
+	char **incompletePath2;
+	char * paths = getenv("PATH");
+	char *holder2 = (char*)malloc((strlen(paths) + 1) * sizeof(char));
+	for (i = 0; i < strlen(paths) + 1; i++) {
+		if (paths[i] == ':' || paths[i] == '\0') {
+
+			if (count == 0) {
+				incompletePath2 = (char**)malloc(sizeof(char*));
+			}
+			else {
+				incompletePath2 = (char**)realloc(incompletePath2, (count + 1) * sizeof(char*));
+			}
+			memcpy(holder2, paths + begining, i - begining);
+			holder2[i - begining] = '\0';
+			incompletePath2[count] = (char *)malloc((strlen(holder2) + strlen(extra) + 2) * sizeof(char));
+			strcpy(incompletePath2[count], holder2);
+			strcat(incompletePath2[count], "/");
+			strcat(incompletePath2[count], extra);
+			i++;
+
+			begining = i;
+			count++;
+		}
+
+
+
+	}
+	/*	printf("%s\n", "file does not exist");
+		char * pathTest;
+		printf("%s\n", getenv("PATH"));
+		for (i = 0; i < count; i++) {
+			printf("%s\n",incompletePath2[i]);
+		}*/
+
+	for (i = 0; i < count; i++) {
+		if (fileExist(incompletePath2[i]) == 1) {
+			return incompletePath2[i];
+		}
+	}
+
+	printf("%s\n", "file does not exist");
+	return NULL;
+}
+int fileExist(char * absolutePath) {
+	if (access(absolutePath, F_OK) == -1)
+	{
+		return 0;
+	}
+	return 1;
+}
 // Function to return any proper environmental variable value
 char* expandEnv(const char * name) {
 
@@ -130,6 +333,41 @@ char* expandEnv(const char * name) {
     subbuff[strlen(name)] = '\0';
     char * value = getenv(subbuff);
     return value;
+
+}
+void my_execute(char **cmd) {
+
+	int status;
+
+	pid_t pid = fork();
+
+	if (pid == -1) {
+
+		//Error
+
+		exit(1);
+
+	}
+
+	else if (pid == 0) {
+
+		//Child
+
+		execv(cmd[0], cmd);
+
+		fprintf("Problem executing %s\n", cmd[0]);
+
+		exit(1);
+
+	}
+
+	else {
+
+		//Parent
+
+		waitpid(pid, &status, 0);
+
+	}
 
 }
 
