@@ -35,7 +35,9 @@ int main() {
     instr.numTokens = 0;
 
     while (1) {
-
+	char dir[100];
+	 //if we use dir, we can save the directory in this variable for easier use when changing directories.    
+	//printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), getcwd(dir,100)); <<  getcwd() saved the current directory to dir.
         printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
 
         // loop reads character sequences separated by whitespace
