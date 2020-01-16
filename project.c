@@ -25,7 +25,7 @@ void inputAction(instruction* instr_ptr);
 char* path(const char * name);
 char * checkForPath(char *extra);
 int fileExist(char * absolutePath);
-void my_execute(char **cmd);
+void my_execute(char **cmd,int size);
 int main() {
     char* token = NULL;
     char* temp = NULL;
@@ -78,10 +78,10 @@ int main() {
             token = NULL;
             temp = NULL;
         } while ('\n' != getchar());    //until end of line is reached
-
+		addNull(&instr);
         inputAction(&instr);
-
-        addNull(&instr);
+		printTokens(&instr);
+       
        // printTokens(&instr);                 // <----- 	COMMENTED OFF TOKEN PRINTING
         clearInstruction(&instr);
 
@@ -95,9 +95,10 @@ int main() {
 // Renamed function
 void inputAction(instruction* instr_ptr){
 	int i;
+	int check2Complete;
 	char *check;
 	char * recieve;
-	
+	char *check2;
 	
 	
 
@@ -128,15 +129,24 @@ void inputAction(instruction* instr_ptr){
 				if ((instr_ptr->tokens)[i] != NULL) {
 
 					check = strrchr(instr_ptr->tokens[i], '/');
-
+					check2 = strrchr(instr_ptr->tokens[i], '-');
+					check2Complete=check2 - instr_ptr->tokens[i];
 					if (check == NULL) {
+						if (check2Complete !=0) {
 							recieve = checkForPath(instr_ptr->tokens[i]);
+							//printf("%s%d", recieve, i);
+						}
+						else {
+							recieve = instr_ptr->tokens[i];
+							//printf("%s%d", recieve,i);
+							
 
+						}
 						
 					}
 					else {
 						recieve = path(instr_ptr->tokens[i]);
-
+					//	printf("%s%d", recieve, i);
 
 					}
 					//if (strcmp(recieve, instr_ptr->tokens[i]) == 0) {
@@ -151,7 +161,7 @@ void inputAction(instruction* instr_ptr){
 
 			}
 			if (recieve != NULL) {
-				my_execute(instr_ptr->tokens);
+				my_execute(instr_ptr->tokens, instr_ptr->numTokens);
 			}
 			//printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
 		}
@@ -188,7 +198,7 @@ char* path(const char * name) {
 			
 			file = strrchr(holder, '.');
 			if (strcmp(holder, "./") == 0) {
-				//printf("%s\n", "1");
+				
 				incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + 2) * sizeof(char));
 				strcpy(incompletePath[catch22], getenv("PWD"));
 				strcat(incompletePath[catch22], "/");
@@ -335,10 +345,16 @@ char* expandEnv(const char * name) {
     return value;
 
 }
-void my_execute(char **cmd) {
+void my_execute(char **cmd,int size) {
 
 	int status;
-
+	int i;
+	for (i = 0; i < strlen(cmd); i++) {
+		printf("%d", i);
+	//	printf("%s", cmd[i]);
+	}
+	//cmd = (char**)realloc(cmd, (size + 1) * sizeof(char*));
+	//cmd[size] = NULL;
 	pid_t pid = fork();
 
 	if (pid == -1) {
@@ -346,7 +362,6 @@ void my_execute(char **cmd) {
 		//Error
 
 		exit(1);
-
 	}
 
 	else if (pid == 0) {
@@ -356,7 +371,6 @@ void my_execute(char **cmd) {
 		execv(cmd[0], cmd);
 
 		fprintf("Problem executing %s\n", cmd[0]);
-
 		exit(1);
 
 	}
@@ -364,11 +378,11 @@ void my_execute(char **cmd) {
 	else {
 
 		//Parent
-
+		
 		waitpid(pid, &status, 0);
 
 	}
-
+//	cmd = (char**)realloc(cmd, (size + 1) * sizeof(char*));
 }
 
 //reallocates instruction array to hold another token
