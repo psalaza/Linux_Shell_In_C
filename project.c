@@ -37,8 +37,8 @@ int main() {
     while (1) {
 	char dir[100];
 	 //if we use dir, we can save the directory in this variable for easier use when changing directories.    
-	//printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), getcwd(dir,100)); <<  getcwd() saved the current directory to dir.
-        printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
+	printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), getcwd(dir,100)); //<<  getcwd() saved the current directory to dir.
+       // printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
 
         // loop reads character sequences separated by whitespace
         do {
@@ -123,9 +123,12 @@ void inputAction(instruction* instr_ptr){
 			}
 
 		}
-		//else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
-
-		//}
+		else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
+			if(chdir((instr_ptr->tokens)[1])!= 0 )
+				perror((instr_ptr->tokens)[1]);
+			//output "too many arguments if needed"
+			//chdir("..");
+		}
 		else {
 			for (i = 0; i < instr_ptr->numTokens; i++) {
 				if ((instr_ptr->tokens)[i] != NULL) {
