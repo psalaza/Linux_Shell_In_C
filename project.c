@@ -109,7 +109,7 @@ void inputAction(instruction* instr_ptr){
 
 
 			
-			for (i = 1; i < instr_ptr->numTokens; i++) {
+			for (i = 1; i < instr_ptr->numTokens-1; i++) {
 				if (((instr_ptr->tokens)[i][0]) == '$') {
 					if (expandEnv((instr_ptr->tokens)[i]) == NULL) {
 						printf("NO SUCH COMMAND EXISTS ");
