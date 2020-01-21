@@ -124,6 +124,10 @@ void inputAction(instruction* instr_ptr){
 
 		}
 		else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
+			//we are missing 
+			//1) if "cd" (no 2nd argument) then cd $HOME.
+			//2)output "too many arguments if needed" 2 or more arguments
+			//3)slides say to copy path to $PWD  using setenv?? helpful to do with parent and child running processes??
 			if(chdir((instr_ptr->tokens)[1])!= 0 )
 				perror((instr_ptr->tokens)[1]);
 			//output "too many arguments if needed"
