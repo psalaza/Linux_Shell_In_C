@@ -35,11 +35,8 @@ int main() {
     instr.numTokens = 0;
 
     while (1) {
-	char dir[100];
-	 //if we use dir, we can save the directory in this variable for easier use when changing directories.    
-	printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), getcwd(dir,100)); //<<  getcwd() saved the current directory to dir.
-       // printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
-
+        printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
+	
         // loop reads character sequences separated by whitespace
         do {
             //scans for next token and allocates token var to size of scanned token
@@ -101,6 +98,8 @@ void inputAction(instruction* instr_ptr){
 	char *check;
 	char * recieve;
 	char *check2;
+	char dir[100];
+	getcwd(dir,100);
 	
 	
 
@@ -124,14 +123,24 @@ void inputAction(instruction* instr_ptr){
 
 		}
 		else if(strcmp((instr_ptr->tokens)[0],"cd") == 0){
-			//we are missing 
-			//1) if "cd" (no 2nd argument) then cd $HOME.
-			//2)output "too many arguments if needed" 2 or more arguments
-			//3)slides say to copy path to $PWD  using setenv?? helpful to do with parent and child running processes??
-			if(chdir((instr_ptr->tokens)[1])!= 0 )
-				perror((instr_ptr->tokens)[1]);
-			//output "too many arguments if needed"
-			//chdir("..");
+			if((instr_ptr->tokens)[2] == NULL){
+				if((instr_ptr->tokens)[1] == NULL){
+					chdir(getenv("HOME"));
+					char* temp;
+					temp = getenv("HOME");
+					setenv("PWD",temp,1);
+					
+				}
+				else{
+					if(chdir((instr_ptr->tokens)[1])!= 0 )
+						perror((instr_ptr->tokens)[1]);
+					else{
+						setenv("PWD",getcwd(dir,100),1);
+					}
+				}
+			}	
+			else
+				printf("Too many arguments\n");
 		}
 		else {
 			for (i = 0; i < instr_ptr->numTokens; i++) {
