@@ -142,6 +142,16 @@ void inputAction(instruction* instr_ptr){
 			else
 				printf("Too many arguments\n");
 		}
+		//pipe command found in user input
+		else if( (instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1],"|") == 0){
+			//syntax error check if user does not input 2 arguments with the pipe.
+			if((instr_ptr->tokens)[2] == NULL){
+				printf("ERROR: invalid syntax, no 2nd argument found\n");
+			}
+			else{
+				printf("pipe needs to happen here\n");
+			}
+		}
 		else {
 			for (i = 0; i < instr_ptr->numTokens; i++) {
 				if ((instr_ptr->tokens)[i] != NULL) {
@@ -342,8 +352,13 @@ char * checkForPath(char *extra) {
 			return incompletePath2[i];
 		}
 	}
-
-	printf("%s\n", "file does not exist");
+	//syntax error check if pipe command is the first thing inputed
+	if(strcmp(extra,"|") == 0){
+		printf("ERROR: invalid syntax: %s\n",extra);
+	}
+	else{
+		printf("%s\n", "file does not exist");
+	}
 	return NULL;
 }
 int fileExist(char * absolutePath) {
