@@ -143,7 +143,7 @@ void inputAction(instruction* instr_ptr){
 				printf("Too many arguments\n");
 		}
 		//pipe command found in user input
-		else if( (instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1],"|") == 0){
+		 else if( (instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1],"|") == 0 || strcmp((instr_ptr->tokens)[2],"|") == 0){
 			//syntax error check if user does not input 2 arguments with the pipe.
 			if((instr_ptr->tokens)[2] == NULL){
 				printf("ERROR: invalid syntax, no 2nd argument found\n");
