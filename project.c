@@ -22,7 +22,7 @@ void clearInstruction(instruction* instr_ptr);
 void addNull(instruction* instr_ptr);
 char* expandEnv(const char * name);
 void inputAction(instruction* instr_ptr);
-char* path(const char * name);
+char* path(const char * name,int pass);
 char * checkForPath(char *extra);
 int fileExist(char * absolutePath);
 void my_execute(char **cmd,int size);
@@ -98,6 +98,9 @@ void inputAction(instruction* instr_ptr){
 	char *check;
 	char * recieve;
 	char *check2;
+	char *check3;
+	char *check4;
+	char *check5;
 	char dir[100];
 	getcwd(dir,100);
 	
@@ -158,23 +161,168 @@ void inputAction(instruction* instr_ptr){
 
 					check = strrchr(instr_ptr->tokens[i], '/');
 					check2 = strrchr(instr_ptr->tokens[i], '-');
-					check2Complete=check2 - instr_ptr->tokens[i];
-					if (check == NULL) {
-						if (check2Complete !=0) {
+					check3 = strrchr(instr_ptr->tokens[i], '>');
+					check4 = strrchr(instr_ptr->tokens[i], '<');
+					check2Complete = check2 - instr_ptr->tokens[i];
+					if (check3 != NULL) {
+						recieve = NULL;
+						
+						if (i + 5 == instr_ptr->numTokens) {
+
+							check5 = strrchr(instr_ptr->tokens[i + 2], '<');
+							if (check5 != NULL) {
+							
+								if (i == 0) {
+									printf("the greater then or less then sign canot be at the start of the input");
+								}
+								else {
+									FILE *target = fopen(path(instr_ptr->tokens[i + 3], 0), "r");
+									FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");
+									int fd = fileno(target);
+									int fc = fileno(gate);
+									instr_ptr->tokens[i] = NULL;
+									if (target != NULL) {
+										if (fork() == 0) {//Child
+											close(STDIN_FILENO);
+											dup(fd);
+											close(STDOUT_FILENO);
+											dup(fc);
+											printf("targethit");
+											my_execute(instr_ptr->tokens,i);
+											close(fd);//Executeprocess
+											close(fc);//Executeprocess
+										}
+										else {//Parent
+											close(fc);
+											close(fd);
+										}
+									}
+
+								}
+							}
+							else {
+								printf("there seems to ba file after after input");
+
+							}
+						}
+						else if (i == 0) {
+							printf("the greater then or less then sign cannot be at the start of the input");
+						}
+						else if (i + 2 == instr_ptr->numTokens) {
+							printf("the greater then or less then sign cannot be at the end of the input");
+						}
+						else if (i + 3 == instr_ptr->numTokens) {
+							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");
+							int fd = fileno(gate);
+							instr_ptr->tokens[i] = NULL;
+							if (fork() == 0) {
+								close(STDOUT_FILENO);
+								dup(fd);
+								my_execute(instr_ptr->tokens, i);
+								close(fd);
+
+							}
+							else {
+								close(fd);
+							}
+						}
+
+						else {
+							printf("%d%d", i, instr_ptr->numTokens);
+							printf("there seems to ba file after after input");
+						}
+
+						break;
+					}
+					else if (check4 != NULL) {
+						recieve = NULL;
+					
+						if (i + 5 == instr_ptr->numTokens) {
+							check5 = strrchr(instr_ptr->tokens[i + 2], '>');
+							if (check5 != NULL) {
+								if (i == 0) {
+									printf("the greater then or less then sign canot be at the start of the input");
+								}
+								else {
+									FILE *target = fopen(path(instr_ptr->tokens[i + 1], 0), "r");
+									FILE * gate = fopen(path(instr_ptr->tokens[i + 3], 1), "w");
+									int fd = fileno(target);
+									int fc = fileno(gate);
+									instr_ptr->tokens[i] = NULL;
+									if (target != NULL) {
+										if (fork() == 0) {//Child
+											close(STDIN_FILENO);
+											dup(fd);
+											close(STDOUT_FILENO);
+											dup(fc);
+									
+											my_execute(instr_ptr->tokens, i);
+											close(fd);//Executeprocess
+											close(fc);//Executeprocess
+										}
+										else {//Parent
+											close(fc);
+											close(fd);
+										}
+									}
+
+								}
+							}
+							else {
+								printf("there seems to ba file after after input");
+
+							}
+						}
+						else if (i == 0) {
+							printf("the greater then or less then sign canot be at the start of the input");
+						}
+						else if (i + 2 == instr_ptr->numTokens) {
+							printf("the greater then or less then sign canot be at the end of the input");
+						}
+						else if (i + 3 == instr_ptr->numTokens) {
+							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 0), "r");
+							if (gate != NULL) {
+								int fd = fileno(gate);
+								instr_ptr->tokens[i] = NULL;
+								if (fork() == 0) {//Child
+									close(STDIN_FILENO);
+									dup(fd);
+
+
+									my_execute(instr_ptr->tokens, i);
+									close(fd);//Executeprocess
+
+								}
+								else {//Parent
+									close(fd);
+								}
+							}
+							else {
+								printf("this file does not exist");
+
+							}
+						}
+						else {
+							// printf("there seems to ba file after after input");
+						}
+						break;
+					}
+					else if (check == NULL) {
+						if (check2Complete != 0) {
 							recieve = checkForPath(instr_ptr->tokens[i]);
 							//printf("%s%d", recieve, i);
 						}
 						else {
 							recieve = instr_ptr->tokens[i];
-							//printf("%s%d", recieve,i);
-							
+
+
 
 						}
-						
+
 					}
 					else {
-						recieve = path(instr_ptr->tokens[i]);
-					//	printf("%s%d", recieve, i);
+						recieve = path(instr_ptr->tokens[i], 0);
+						//	printf("%s%d", recieve, i);
 
 					}
 					//if (strcmp(recieve, instr_ptr->tokens[i]) == 0) {
@@ -182,7 +330,7 @@ void inputAction(instruction* instr_ptr){
 					if (recieve != NULL) {
 						instr_ptr->tokens[i] = (char *)malloc((strlen(recieve) + 1) * sizeof(char));
 						strcpy(instr_ptr->tokens[i], recieve);
-						
+
 					}
 					else { break; }
 				}
@@ -198,7 +346,7 @@ void inputAction(instruction* instr_ptr){
     printf("\n");
 }
 
-char* path(const char * name) {
+char* path(const char * name, int pass) {
 	int i;
 	int fullString = 1;
 	int catch22 = 0;
@@ -207,7 +355,9 @@ char* path(const char * name) {
 	char *file;
 	char *finisher;
 	char **incompletePath;
+	printf("%d\n", name);
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
+	printf("%s\n", "11");
 	for (i = 0; i < strlen(name) + 1; i++) {
 
 		//pull out special characters and make them into a separate token in the instruction
@@ -218,21 +368,23 @@ char* path(const char * name) {
 			holder[i - begining] = '\0';
 
 			if (catch22 == 0) {
+				
 				incompletePath = (char**)malloc(sizeof(char*));
 			}
 			else {
+			
 				incompletePath = (char**)realloc(incompletePath, (catch22 + 1) * sizeof(char*));
 			}
-			
+
 			file = strrchr(holder, '.');
 			if (strcmp(holder, "./") == 0) {
-				
+				printf("%s\n", "8");
 				incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + 2) * sizeof(char));
 				strcpy(incompletePath[catch22], getenv("PWD"));
 				strcat(incompletePath[catch22], "/");
 			}
 			else if (strcmp(holder, "../") == 0) {
-				//	printf("%s\n", "2");
+
 
 				char* pWD = getenv("PWD");
 				ptr = strrchr(pWD, '/');
@@ -244,17 +396,18 @@ char* path(const char * name) {
 				*ptr = '/';
 			}
 			else if (file != NULL && name[i - 1] != '\0') {
+
 				printf("%s\n", "there is a file where it is not suppose to be there");
 				return;
 			}
 			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {
-				//	printf("%s\n", "3");
+
 				incompletePath[catch22] = (char *)malloc((strlen(getenv("HOME")) + 2) * sizeof(char));
 				strcpy(incompletePath[catch22], getenv("HOME"));
 				strcat(incompletePath[catch22], "/");
 			}
 			else if ((strcmp(holder, "/") == 0) && catch22 == 0) {
-				//	printf("%s\n", "4");
+
 				if (getenv("ROOT") != NULL) {
 					incompletePath[catch22] = (char *)malloc((strlen(getenv("ROOT")) + 2) * sizeof(char));
 					strcpy(incompletePath[catch22], getenv("ROOT"));
@@ -266,19 +419,22 @@ char* path(const char * name) {
 				strcat(incompletePath[catch22], "/");
 			}
 			else {
-				//printf("%s\n", "1");
+
 				if (catch22 == 0) {
 					incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + strlen(holder) + 2) * sizeof(char));
 					strcpy(incompletePath[catch22], getenv("PWD"));
 					strcat(incompletePath[catch22], "/");
 					strcat(incompletePath[catch22], holder);
+
 				}
 				else {
 					incompletePath[catch22] = (char *)malloc((strlen(holder) + 2) * sizeof(char));
 					strcpy(incompletePath[catch22], holder);
+
 				}
 
 			}
+
 			catch22++;
 			begining = i;
 		}
@@ -290,19 +446,26 @@ char* path(const char * name) {
 		if ((incompletePath)[i] != NULL)
 			fullString += (strlen(incompletePath[i]));
 		if (i == 0) {
+
+
 			finisher = (char *)malloc((fullString) * sizeof(char));
 			strcpy(finisher, incompletePath[i]);
 		}
 		else
+
 		{
+
 			finisher = (char *)realloc(finisher, (fullString) * sizeof(char));
 			strcat(finisher, incompletePath[i]);
+
 		}
 
 	}
-	if (fileExist(finisher) == 1) {
+
+	if (fileExist(finisher) == 1 || pass == 1) {
 		return finisher;
 	}
+
 	printf("can't find file");
 	return NULL;
 
