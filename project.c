@@ -10,22 +10,93 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 typedef struct
 {
     char** tokens;
     int numTokens;
 } instruction;
 
+// Following code creates a basic queue structure
+// A structure to represent a queue
+struct Queue
+{
+    int front, rear, size;
+    unsigned capacity;
+    char** command;
+};
+
+// function to create a queue of given capacity.
+// It initializes size of queue as 0
+struct Queue* createQueue(unsigned capacity)
+{
+    struct Queue* queue = (struct Queue*) malloc(sizeof(struct Queue));
+    queue->capacity = capacity;
+    queue->front = queue->size = 0;
+    queue->rear = capacity - 1;  // This is important, see the enqueue
+    queue->command = (char**) malloc(queue->capacity * sizeof(char*));
+    return queue;
+}
+
+// Queue is full when size becomes equal to the capacity
+int isFull(struct Queue* queue)
+{  return (queue->size == queue->capacity);  }
+
+// Queue is empty when size is 0
+int isEmpty(struct Queue* queue)
+{  return (queue->size == 0); }
+
+// Function to add an item to the queue.
+// It changes rear and size
+void enqueue(struct Queue* queue, int item)
+{
+    if (isFull(queue))
+        return;
+    queue->rear = (queue->rear + 1)%queue->capacity;
+    queue->command[queue->rear] = item;
+    queue->size = queue->size + 1;
+    printf("%d enqueued to queue\n", item);
+}
+
+// Function to remove an item from queue.
+// It changes front and size
+int dequeue(struct Queue* queue)
+{
+    if (isEmpty(queue))
+        return INT_MIN;
+    int item = queue->command[queue->front];
+    queue->front = (queue->front + 1)%queue->capacity;
+    queue->size = queue->size - 1;
+    return item;
+}
+
+// Function to get front of queue
+int front(struct Queue* queue)
+{
+    if (isEmpty(queue))
+        return INT_MIN;
+    return queue->command[queue->front];
+}
+
+// Function to get rear of queue
+int rear(struct Queue* queue)
+{
+    if (isEmpty(queue))
+        return INT_MIN;
+    return queue->command[queue->rear];
+}
+
 void addToken(instruction* instr_ptr, char* tok);
 void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
 void addNull(instruction* instr_ptr);
 char* expandEnv(const char * name);
-void inputAction(instruction* instr_ptr);
+void inputAction(instruction* instr_ptr, struct Queue* queue);
 char* path(const char * name,int pass);
 char * checkForPath(char *extra);
 int fileExist(char * absolutePath);
-void my_execute(char **cmd,int size);
+void my_execute(char **cmd, int size, struct Queue* queue);
+
 int main() {
     char* token = NULL;
     char* temp = NULL;
@@ -34,9 +105,11 @@ int main() {
     instr.tokens = NULL;
     instr.numTokens = 0;
 
+    struct Queue* cmdqueue = createQueue(100);
+
     while (1) {
         printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
-	
+
         // loop reads character sequences separated by whitespace
         do {
             //scans for next token and allocates token var to size of scanned token
@@ -78,12 +151,12 @@ int main() {
             temp = NULL;
         } while ('\n' != getchar());    //until end of line is reached
 		addNull(&instr);
-        inputAction(&instr);
+    inputAction(&instr, cmdqueue);
 		printTokens(&instr);
-       
-       // printTokens(&instr);                 // <----- 	COMMENTED OFF TOKEN PRINTING
-        clearInstruction(&instr);
+    clearInstruction(&instr);
 
+    // Testing to see if queue works
+    printf("%d dequeued from queue\n\n", dequeue(cmdqueue));
     }
 
     return 0;
@@ -92,8 +165,8 @@ int main() {
 
 // echo function now works and error checks for all possible environmental variables
 // Renamed function
-void inputAction(instruction* instr_ptr){
-	int i;
+void inputAction(instruction* instr_ptr, struct Queue* queue){
+	int i, syncheck;
 	int check2Complete;
 	char *check;
 	char * recieve;
@@ -103,14 +176,34 @@ void inputAction(instruction* instr_ptr){
 	char *check5;
 	char dir[100];
 	getcwd(dir,100);
-	
-	
+
+  for (i = 0; i < instr_ptr->numTokens-1; i++)
+  {
+    if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == 0)) {
+      syncheck = 0;
+      // Ignores leading &
+    }
+    else if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == instr_ptr->numTokens-2)) {
+      syncheck = 1;
+      // Background process needs to be initialized here
+    }
+    else if (strcmp((instr_ptr->tokens)[i], "&") == 0) {
+      syncheck = 2;
+      // Invalid Syntax
+    }
+    else {
+      syncheck = 0;
+      // Non-Background Process
+    }
+  }
+
+
 
 
 		if (strcmp((instr_ptr->tokens)[0], "echo") == 0) {
 
 
-			
+
 			for (i = 1; i < instr_ptr->numTokens-1; i++) {
 				if (((instr_ptr->tokens)[i][0]) == '$') {
 					if (expandEnv((instr_ptr->tokens)[i]) == NULL) {
@@ -132,7 +225,7 @@ void inputAction(instruction* instr_ptr){
 					char* temp;
 					temp = getenv("HOME");
 					setenv("PWD",temp,1);
-					
+
 				}
 				else{
 					if(chdir((instr_ptr->tokens)[1])!= 0 )
@@ -141,7 +234,7 @@ void inputAction(instruction* instr_ptr){
 						setenv("PWD",getcwd(dir,100),1);
 					}
 				}
-			}	
+			}
 			else
 				printf("Too many arguments\n");
 		}
@@ -166,12 +259,12 @@ void inputAction(instruction* instr_ptr){
 					check2Complete = check2 - instr_ptr->tokens[i];
 					if (check3 != NULL) {
 						recieve = NULL;
-						
+
 						if (i + 5 == instr_ptr->numTokens) {
 
 							check5 = strrchr(instr_ptr->tokens[i + 2], '<');
 							if (check5 != NULL) {
-							
+
 								if (i == 0) {
 									printf("the greater then or less then sign canot be at the start of the input");
 								}
@@ -188,7 +281,7 @@ void inputAction(instruction* instr_ptr){
 											close(STDOUT_FILENO);
 											dup(fc);
 											printf("targethit");
-											my_execute(instr_ptr->tokens,i);
+											my_execute(instr_ptr->tokens,i,queue);
 											close(fd);//Executeprocess
 											close(fc);//Executeprocess
 										}
@@ -218,7 +311,7 @@ void inputAction(instruction* instr_ptr){
 							if (fork() == 0) {
 								close(STDOUT_FILENO);
 								dup(fd);
-								my_execute(instr_ptr->tokens, i);
+								my_execute(instr_ptr->tokens, i, queue);
 								close(fd);
 
 							}
@@ -236,7 +329,7 @@ void inputAction(instruction* instr_ptr){
 					}
 					else if (check4 != NULL) {
 						recieve = NULL;
-					
+
 						if (i + 5 == instr_ptr->numTokens) {
 							check5 = strrchr(instr_ptr->tokens[i + 2], '>');
 							if (check5 != NULL) {
@@ -255,8 +348,8 @@ void inputAction(instruction* instr_ptr){
 											dup(fd);
 											close(STDOUT_FILENO);
 											dup(fc);
-									
-											my_execute(instr_ptr->tokens, i);
+
+											my_execute(instr_ptr->tokens, i, queue);
 											close(fd);//Executeprocess
 											close(fc);//Executeprocess
 										}
@@ -289,7 +382,7 @@ void inputAction(instruction* instr_ptr){
 									dup(fd);
 
 
-									my_execute(instr_ptr->tokens, i);
+									my_execute(instr_ptr->tokens, i, queue);
 									close(fd);//Executeprocess
 
 								}
@@ -337,11 +430,11 @@ void inputAction(instruction* instr_ptr){
 
 			}
 			if (recieve != NULL) {
-				my_execute(instr_ptr->tokens, instr_ptr->numTokens);
+				my_execute(instr_ptr->tokens, instr_ptr->numTokens, queue);
 			}
 			//printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
 		}
-	
+
 
     printf("\n");
 }
@@ -368,11 +461,11 @@ char* path(const char * name, int pass) {
 			holder[i - begining] = '\0';
 
 			if (catch22 == 0) {
-				
+
 				incompletePath = (char**)malloc(sizeof(char*));
 			}
 			else {
-			
+
 				incompletePath = (char**)realloc(incompletePath, (catch22 + 1) * sizeof(char*));
 			}
 
@@ -541,7 +634,10 @@ char* expandEnv(const char * name) {
     return value;
 
 }
-void my_execute(char **cmd,int size) {
+void my_execute(char **cmd, int size, struct Queue* queue) {
+
+  // testing Queue functionality
+  enqueue(queue, cmd);
 
 	int status;
 	int i;
@@ -574,7 +670,7 @@ void my_execute(char **cmd,int size) {
 	else {
 
 		//Parent
-		
+
 		waitpid(pid, &status, 0);
 
 	}
