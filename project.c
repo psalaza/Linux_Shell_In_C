@@ -305,6 +305,18 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			else
 				printf("Too many arguments\n");
 		}
+		else if (strcmp((instr_ptr->tokens)[0], "jobs") == 0) {
+			int i;
+			if (isEmpty(queue)) {
+				printf("All background processes complete\n");
+			}
+			else {
+				for (i = 0; i < queue->size; i++) {
+					printf("[%d]+ [%d] [%s]\n", queue->array[i].PIQ, queue->array[i].PID, queue->array[i].command[0]);
+					// need to create command print function
+				}
+			}
+		}
 		//pipe command found in user input
 		else if ((instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1], "|") == 0 || (instr_ptr->tokens)[2] != NULL && strcmp((instr_ptr->tokens)[2], "|") == 0) {
 			//syntax error check if user does not input 2 arguments with the pipe.
