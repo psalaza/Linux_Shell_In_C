@@ -102,7 +102,7 @@ RBP rear(struct Queue* queue)
 	}
 	return queue->array[queue->rear];
 }
-void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t);
+void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t, int *cc);
 void addToken(instruction* instr_ptr, char* tok);
 void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
@@ -150,9 +150,9 @@ int main() {
 
 			int i;
 			int start = 0;
-		
+
 			for (i = 0; i < strlen(token); i++) {
-				
+
 				//pull out special characters and make them into a separate token in the instruction
 				if (token[i] == '|' || token[i] == '>' || token[i] == '<' || token[i] == '&' ) {
 					if (i - start > 0) {
@@ -208,14 +208,13 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	char *check3;
 	char *check4;
 	char *check5;
-	char * checkforNull;
 	char dir[100];
 	getcwd(dir, 100);
 
 
 	int pid,status;
 	int fd[2];
-	
+
 	char *CMD1[4];
 	char *CMD2[4];
 	char *CMD3[4];
@@ -226,7 +225,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 		CMD1[p] = NULL;
 		CMD2[p] = NULL;
 		CMD3[p] = NULL;
-	}	
+	}
 	int temp = 0;
 	int k;
 	int pp = 0;
@@ -239,7 +238,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 		}
 
 	}
-	
+
 	// Ignores leading '&' if it occurs
 	if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == 0)) {
 		//printf("Before Allocation:\n");
@@ -331,10 +330,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 					if (chdir((instr_ptr->tokens)[1]) != 0)
 						perror((instr_ptr->tokens)[1]);
 					else {
-						 checkforNull = path((instr_ptr->tokens)[1]);
-						if (checkforNull != NULL) {
-							setenv("PWD", checkforNull, 1);
-						}
+						setenv("PWD", getcwd(dir, 100), 1);
 					}
 				}
 			}
@@ -374,9 +370,9 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 		}
 		//pipe command found in user input
 		else if(ret == 0){
-			
+
 			for(k = 0; k < instr_ptr->numTokens;k++){
-		
+
 				if((instr_ptr->tokens)[k] != NULL){
 					int q = 0;
 					if(strcmp((instr_ptr->tokens)[k],"|") == 0){
@@ -388,45 +384,44 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 						switch(temp){
 
 							case 0:
-								CMD1[c1] = (instr_ptr->tokens)[k];		
-								c1++;		
-								break;					
+								CMD1[c1] = (instr_ptr->tokens)[k];
+								c1++;
+								break;
 							case 1:
-								CMD2[c2] = (instr_ptr->tokens)[k];		
-								c2++;		
-							break;					
+								CMD2[c2] = (instr_ptr->tokens)[k];
+								c2++;
+							break;
 							case 2:
-								CMD3[c3] = (instr_ptr->tokens)[k];		
-								c3++;		
-								break;					
+								CMD3[c3] = (instr_ptr->tokens)[k];
+								c3++;
+								break;
 						}
 					}
 				}
 
-			}  
+			}
 
-				
+
 			if((instr_ptr->tokens)[2] == NULL){
 				printf("ERROR: invalid syntax, no 2nd argument found\n");
 			}
-			else{	
+			else{
 
 				pipe(fd);
 				switch(pid = fork()){
 					case 0:
 						//child
-						mypipe(fd,CMD1,CMD2,CMD3,s1);
-						exit(1);
-						break;
-					
+						mypipe(fd,CMD1,CMD2,CMD3,s1,cc);
+						exit(0);
+
 					default:
 						//parent
-						while ((pid == wait(&status)) != 1)
+						while ((pid = wait(&status)) != -1)
 							fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
 						break;
-						
-				}		
-				
+
+				}
+
 			}
 		}
 		else {
@@ -625,13 +620,14 @@ char* path(const char * name, int pass) {
 	int catch22 = 0;                                //checks to see if their is already something in incmplete path
 	int begining = 0;                               //keeps track of where to start in the array
 	char *ptr;
-	char *file;                                     //to check if their is a file in the wrong place        
+	char *file;                                     //to check if their is a file in the wrong place
 	char *finisher;                                 //finsished path
 	char **incompletePath;                          //array of strings that the path is seaperated into
+	printf("%d\n", name);
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
-
+	printf("%s\n", "11");
 	for (i = 0; i < strlen(name) + 1; i++) {        //goes through cstring and breaks it apart at ceartin values
-													//it then checks those values to see if their is an error 
+													//it then checks those values to see if their is an error
 													//like a file in  the wrong place or if their is something that needs to be repplaced
 
 		//pull out special characters and make them into a separate token in the instruction
@@ -756,7 +752,7 @@ char * checkForPath(char *extra) {
 	int count = 0;                       //size of incompletePath2
 	char **incompletePath2;              //holds possible absolute paths
 	char * paths = getenv("PATH");       //gets possible paths
-	char *holder2 = (char*)malloc((strlen(paths) + 1) * sizeof(char)); 
+	char *holder2 = (char*)malloc((strlen(paths) + 1) * sizeof(char));
 	for (i = 0; i < strlen(paths) + 1; i++) {//parses path by :
 		if (paths[i] == ':' || paths[i] == '\0') {
 
@@ -811,7 +807,7 @@ int fileExist(char * absolutePath) {      //checks if you can access file
 }
 
 
-void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
+void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t, int *cc){
 
 	int s1 = t;
 	int i;
@@ -819,15 +815,15 @@ void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
 	int pid;
 
 	char temp[50];
-	strcpy(temp,"/bin/"); 
+	strcpy(temp,"/bin/");
 	strcat(temp,c1[0]);
 
 	char temp2[50];
-	strcpy(temp2,"/bin/"); 
+	strcpy(temp2,"/bin/");
 	strcat(temp2,c2[0]);
 	if(c3[0] != NULL){
 		char temp3[50];
-		strcpy(temp3,"/bin/"); 
+		strcpy(temp3,"/bin/");
 		strcat(temp3,c3[0]);
 		c3[0] = temp3;
 	}
@@ -838,21 +834,21 @@ void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
 */
 
 
-	char *d1[] = {c1[0],c1[1],c1[2],c1[3]};	
-	char *d2[] = {c2[0],c2[1],c2[2],c2[3]};	
-	char *d3[] = {c3[0],c3[1],c3[2],c3[3]};	
+	char *d1[] = {c1[0],c1[1],c1[2],c1[3]};
+	char *d2[] = {c2[0],c2[1],c2[2],c2[3]};
+	char *d3[] = {c3[0],c3[1],c3[2],c3[3]};
 	printf("Printing command arrays just to show\nPIPE RESULTS DO NOT SHOW UNTIL AFTER USER ENTERS EXIT\nwe also need to add command counter when pipe is used\n");
 		for(i = 0; i < s1; i++){
-			printf("CMD1: %s\n",d1[i]);	
+			printf("CMD1: %s\n",d1[i]);
 		}
 		for(i = 0; i < s1; i++){
-			printf("CMD2: %s\n",d2[i]);	
+			printf("CMD2: %s\n",d2[i]);
 		}
 		for(i = 0; i < s1; i++){
-			printf("CMD3: %s\n",d3[i]);	
+			printf("CMD3: %s\n",d3[i]);
 		}
 
-	switch(fork()){
+	switch(pid = fork()){
 		case 0 :
 			//child
 			dup2(fd[0],0);
@@ -867,6 +863,9 @@ void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
 			perror(d1[0]);
 
 	}
+	// Adds to command counter
+	int tempint = *cc;
+	*cc = tempint + 1;
 }
 
 // Function to return any proper environmental variable value
