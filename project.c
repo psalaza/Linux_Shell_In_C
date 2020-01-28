@@ -102,7 +102,7 @@ RBP rear(struct Queue* queue)
 	}
 	return queue->array[queue->rear];
 }
-void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t, int *cc);
+void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t);
 void addToken(instruction* instr_ptr, char* tok);
 void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
@@ -429,11 +429,15 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			}
 			else{
 
+				// Adds to command counter
+				int tempint = *cc;
+				*cc = tempint + 1;
+
 				pipe(fd);
 				switch(pid = fork()){
 					case 0:
 						//child
-						mypipe(fd,CMD1,CMD2,CMD3,s1,cc);
+						mypipe(fd,CMD1,CMD2,CMD3,s1);
 						exit(0);
 
 					default:
@@ -642,13 +646,13 @@ char* path(const char * name, int pass) {
 	int catch22 = 0;                                //checks to see if their is already something in incmplete path
 	int begining = 0;                               //keeps track of where to start in the array
 	char *ptr;
-	char *file;                                     //to check if their is a file in the wrong place        
+	char *file;                                     //to check if their is a file in the wrong place
 	char *finisher;                                 //finsished path
 	char **incompletePath;                          //array of strings that the path is seaperated into
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
 
 	for (i = 0; i < strlen(name) + 1; i++) {        //goes through cstring and breaks it apart at ceartin values
-													//it then checks those values to see if their is an error 
+													//it then checks those values to see if their is an error
 													//like a file in  the wrong place or if their is something that needs to be repplaced
 
 		//pull out special characters and make them into a separate token in the instruction
@@ -848,7 +852,7 @@ int fileExist(char * absolutePath) {      //checks if you can access file
 }
 
 
-void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t, int *cc){
+void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
 
 	int s1 = t;
 	int i;
@@ -904,9 +908,6 @@ void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t, int *cc){
 			perror(d1[0]);
 
 	}
-	// Adds to command counter
-	int tempint = *cc;
-	*cc = tempint + 1;
 }
 
 // Function to return any proper environmental variable value
