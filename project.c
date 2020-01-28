@@ -102,7 +102,7 @@ RBP rear(struct Queue* queue)
 	}
 	return queue->array[queue->rear];
 }
-
+void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t);
 void addToken(instruction* instr_ptr, char* tok);
 void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
@@ -209,6 +209,34 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	char dir[100];
 	getcwd(dir, 100);
 
+
+	int pid,status;
+	int fd[2];
+	
+	char *CMD1[4];
+	char *CMD2[4];
+	char *CMD3[4];
+	int c1 = 0, c2 = 0, c3 = 0;
+	int s1 = sizeof(CMD1)/sizeof(CMD1[0]);
+	int p;
+	for(p=0; p < s1;p++){
+		CMD1[p] = NULL;
+		CMD2[p] = NULL;
+		CMD3[p] = NULL;
+	}	
+	int temp = 0;
+	int k;
+	int pp = 0;
+	int ret;
+	for(k = 0; k < instr_ptr->numTokens;k++){
+		if((instr_ptr->tokens)[k] != NULL){
+			ret = strcmp((instr_ptr->tokens)[k], "|");
+			if(ret == 0)
+				break;
+		}
+
+	}
+	
 	// Ignores leading '&' if it occurs
 	if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == 0)) {
 		//printf("Before Allocation:\n");
@@ -339,13 +367,59 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			}
 		}
 		//pipe command found in user input
-		else if ((instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1], "|") == 0 || (instr_ptr->tokens)[2] != NULL && strcmp((instr_ptr->tokens)[2], "|") == 0) {
-			//syntax error check if user does not input 2 arguments with the pipe.
-			if ((instr_ptr->tokens)[2] == NULL) {
+		else if(ret == 0){
+			
+			for(k = 0; k < instr_ptr->numTokens;k++){
+		
+				if((instr_ptr->tokens)[k] != NULL){
+					int q = 0;
+					if(strcmp((instr_ptr->tokens)[k],"|") == 0){
+						q = 1;
+						temp = temp + 1;
+					}
+					if(q == 0){
+
+						switch(temp){
+
+							case 0:
+								CMD1[c1] = (instr_ptr->tokens)[k];		
+								c1++;		
+								break;					
+							case 1:
+								CMD2[c2] = (instr_ptr->tokens)[k];		
+								c2++;		
+							break;					
+							case 2:
+								CMD3[c3] = (instr_ptr->tokens)[k];		
+								c3++;		
+								break;					
+						}
+					}
+				}
+
+			}  
+
+				
+			if((instr_ptr->tokens)[2] == NULL){
 				printf("ERROR: invalid syntax, no 2nd argument found\n");
 			}
-			else {
-				printf("pipe needs to happen here\n");
+			else{	
+
+				pipe(fd);
+				switch(pid = fork()){
+					case 0:
+						//child
+						mypipe(fd,CMD1,CMD2,CMD3,s1);
+						exit(0);
+					
+					default:
+						//parent
+						while ((pid = wait(&status)) != -1)
+							fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
+						break;
+
+				}		
+				
 			}
 		}
 		else {
@@ -725,6 +799,66 @@ int fileExist(char * absolutePath) {
 	}
 	return 1;
 }
+
+
+void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
+
+	int s1 = t;
+	int i;
+	printf("PIPING!\n");
+	int pid;
+
+	char temp[50];
+	strcpy(temp,"/bin/"); 
+	strcat(temp,c1[0]);
+
+	char temp2[50];
+	strcpy(temp2,"/bin/"); 
+	strcat(temp2,c2[0]);
+	if(c3[0] != NULL){
+		char temp3[50];
+		strcpy(temp3,"/bin/"); 
+		strcat(temp3,c3[0]);
+		c3[0] = temp3;
+	}
+	c1[0] = temp;
+	c2[0] = temp2;
+
+/*
+*/
+
+
+	char *d1[] = {c1[0],c1[1],c1[2],c1[3]};	
+	char *d2[] = {c2[0],c2[1],c2[2],c2[3]};	
+	char *d3[] = {c3[0],c3[1],c3[2],c3[3]};	
+	printf("Printing command arrays just to show\nPIPE RESULTS DO NOT SHOW UNTIL AFTER USER ENTERS EXIT\nwe also need to add command counter when pipe is used\n");
+		for(i = 0; i < s1; i++){
+			printf("CMD1: %s\n",d1[i]);	
+		}
+		for(i = 0; i < s1; i++){
+			printf("CMD2: %s\n",d2[i]);	
+		}
+		for(i = 0; i < s1; i++){
+			printf("CMD3: %s\n",d3[i]);	
+		}
+
+	switch(pid = fork()){
+		case 0 :
+			//child
+			dup2(fd[0],0);
+			close(fd[1]);
+			execv(d2[0],d2);
+			perror(d2[0]);
+		default:
+			//parent
+			dup2(fd[1],1);
+			close(fd[0]);
+			execv(d1[0],d1);
+			perror(d1[0]);
+
+	}
+}
+
 // Function to return any proper environmental variable value
 char* expandEnv(const char * name) {
 
