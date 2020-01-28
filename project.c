@@ -112,7 +112,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc);
 char* path(const char * name, int pass);
 char * checkForPath(char *extra);
 int fileExist(char * absolutePath);
-void my_execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc);
+void execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc);
 
 int main() {
 	char* token = NULL;
@@ -478,21 +478,28 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 									int fc = fileno(gate);
 									instr_ptr->tokens[i] = NULL;
 									if (target != NULL) {
-										if (fork() == 0) {
+										int status;
+										pid_t pid = fork();
+
+										switch (pid) {
+										case 0:
 											close(STDIN_FILENO);
 											dup(fd);
 											close(STDOUT_FILENO);
 											dup(fc);
-											my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
+											execute(instr_ptr->tokens, i, queue, syncheck, cc);
 											close(fd);
 											close(fc);
-										}
-										else {
+											exit(1);
+											break;
+										default:
+											waitpid(pid, &status, 0);
 											close(fc);
 											close(fd);
+											break;
+
 										}
 									}
-
 								}
 							}
 							else {
@@ -510,15 +517,18 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");
 							int fd = fileno(gate);
 							instr_ptr->tokens[i] = NULL;
-							if (fork() == 0) {
+							switch (fork()) {
+							case 0:
 								close(STDOUT_FILENO);
 								dup(fd);
-								my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
+								execute(instr_ptr->tokens, i, queue, syncheck, cc);
 								close(fd);
+								exit(1);
+								break;
+							default:
+								close(fd);
+								break;
 
-							}
-							else {
-								close(fd);
 							}
 						}
 
@@ -543,21 +553,29 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 									FILE * gate = fopen(path(instr_ptr->tokens[i + 3], 1), "w");
 									int fd = fileno(target);
 									int fc = fileno(gate);
+									int status;
+
 									instr_ptr->tokens[i] = NULL;
 									if (target != NULL) {
-										if (fork() == 0) {//Child
+										pid_t pid = fork();
+										switch (pid) {
+										case 0:
 											close(STDIN_FILENO);
 											dup(fd);
 											close(STDOUT_FILENO);
 											dup(fc);
 
-											my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
+											execute(instr_ptr->tokens, i, queue, syncheck, cc);
 											close(fd);
 											close(fc);
-										}
-										else {
+											exit(1);
+											break;
+										default:
 											close(fc);
 											close(fd);
+											waitpid(pid, &status, 0);
+											break;
+
 										}
 									}
 
@@ -579,17 +597,21 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 							if (gate != NULL) {
 								int fd = fileno(gate);
 								instr_ptr->tokens[i] = NULL;
-								if (fork() == 0) {
+								int status;
+								pid_t pid = fork();
+
+								switch (pid) {
+								case 0:
 									close(STDIN_FILENO);
 									dup(fd);
-
-
-									my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
+									execute(instr_ptr->tokens, i, queue, syncheck, cc);
 									close(fd);
-
-								}
-								else {
+									exit(1);
+									break;
+								default:
+									waitpid(pid, &status, 0);
 									close(fd);
+									break;
 								}
 							}
 							else {
@@ -628,7 +650,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 
 			}
 			if (recieve != NULL) {
-				my_execute(instr_ptr->tokens, instr_ptr->numTokens, queue, syncheck, cc);
+				execute(instr_ptr->tokens, instr_ptr->numTokens, queue, syncheck, cc);
 			}
 			//printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
 		}
@@ -923,7 +945,7 @@ char* expandEnv(const char * name) {
 	return value;
 
 }
-void my_execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) {
+void execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) {
 
 	int status;
 	int i;
