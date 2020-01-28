@@ -3,11 +3,11 @@ Project 1: Implementing a Shell
 
 Group Members: Charles Harris, Pedro Salazar, Spencer Lewis
 
-File Listing:
-makefile  project.c
+File Listing:<br/>
+makefile,  project.c
 
-Makefile Description:
-In order to run the implemented shell:
+Makefile Description:<br/>
+In order to run the implemented shell:<br/>
   1) To compile project.c run:
   > make
   2) To begin the program run:
@@ -15,21 +15,16 @@ In order to run the implemented shell:
   3) When finished run:
   > make clean
 
-Division of Labor:
-  Charles Harris:
-    Shortcut and $PATH Resolution
-    Execution
-    I/O Redirection
-    Comments and Documentation
-  Pedro Salazar:
-    Pipes
-    cd command
-    echo ARGS command
-    Comments and Documentation
-  Spencer Lewis:
-    Set up github (parsing)
-    Environmental Variables & Prompt
-    Background Processing
-    exit & jobs commands
+Division of Labor:<br/>
+
+  Charles Harris: Shortcut and $PATH Resolution, Execution,<br/>
+  I/O Redirection, Comments and Documentation<br/>
+  
+  Pedro Salazar: Pipes, cd command, echo ARGS command,<br/>
+  Comments and Documentation<br/>
+  
+  Spencer Lewis: Set up github (parsing file), Env Variables,<br/>
+  Prompt, Background Processing, exit & jobs commands<br/>
+  Comments and Documentation<br/>
     
 Git Commit Log: NEEDS TO BE ADDED
