@@ -330,7 +330,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 					if (chdir((instr_ptr->tokens)[1]) != 0)
 						perror((instr_ptr->tokens)[1]);
 					else {
-						setenv("PWD", getcwd(dir, 100), 1);
+						setenv("PWD", path((instr_ptr->tokens)[1]), 1);
 					}
 				}
 			}
@@ -412,14 +412,15 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 					case 0:
 						//child
 						mypipe(fd,CMD1,CMD2,CMD3,s1);
-						exit(0);
+						exit(1);
+						break;
 					
 					default:
 						//parent
-						while ((pid = wait(&status)) != -1)
+						while ((pid == wait(&status)) != 1)
 							fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
 						break;
-
+						
 				}		
 				
 			}
@@ -623,9 +624,8 @@ char* path(const char * name, int pass) {
 	char *file;                                     //to check if their is a file in the wrong place        
 	char *finisher;                                 //finsished path
 	char **incompletePath;                          //array of strings that the path is seaperated into
-	printf("%d\n", name);
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
-	printf("%s\n", "11");
+
 	for (i = 0; i < strlen(name) + 1; i++) {        //goes through cstring and breaks it apart at ceartin values
 													//it then checks those values to see if their is an error 
 													//like a file in  the wrong place or if their is something that needs to be repplaced
@@ -848,7 +848,7 @@ void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
 			printf("CMD3: %s\n",d3[i]);	
 		}
 
-	switch(pid = fork()){
+	switch(fork()){
 		case 0 :
 			//child
 			dup2(fd[0],0);
