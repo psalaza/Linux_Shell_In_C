@@ -108,11 +108,11 @@ void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
 void addNull(instruction* instr_ptr);
 char* expandEnv(const char * name);
-void inputAction(instruction* instr_ptr, struct Queue* queue);
+void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc);
 char* path(const char * name, int pass);
 char * checkForPath(char *extra);
 int fileExist(char * absolutePath);
-void my_execute(char **cmd, int size, struct Queue* queue, int bcheck);
+void my_execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc);
 
 int main() {
 	char* token = NULL;
@@ -123,6 +123,8 @@ int main() {
 	instr.numTokens = 0;
 
 	struct Queue* cmdqueue = createQueue(100);
+
+	int commandcount = 0;
 
 	while (1) {
 
@@ -181,7 +183,7 @@ int main() {
 			temp = NULL;
 		} while ('\n' != getchar());    //until end of line is reached
 		addNull(&instr);
-		inputAction(&instr, cmdqueue);
+		inputAction(&instr, cmdqueue, &commandcount);
 		printTokens(&instr);
 		clearInstruction(&instr);
 
@@ -195,7 +197,7 @@ int main() {
 
 // echo function now works and error checks for all possible environmental variables
 // Renamed function
-void inputAction(instruction* instr_ptr, struct Queue* queue) {
+void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	int i, syncheck;
 	int check2Complete;
 	char *check;
@@ -317,6 +319,25 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 				}
 			}
 		}
+		else if (strcmp((instr_ptr->tokens)[0], "exit") == 0) {
+			printf("Exiting now!\n\t Commands executed: %d\n", *cc);
+			if (isEmpty(queue)) {
+				exit(1);
+			}
+			else {
+				while (1) {
+				int tempint, status, i;
+	      for (tempint = 0; tempint < queue->bcounter; tempint++) {
+	        	if (waitpid(queue->array[tempint].PID, &status, WNOHANG) != 0) {}
+						else {
+	          	printf("[%d]+    [",queue->array[tempint].PIQ);
+							//queue->array[tempint].command[0]);
+	          	dequeue(queue);
+	          }
+				}
+				}
+			}
+		}
 		//pipe command found in user input
 		else if ((instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1], "|") == 0 || (instr_ptr->tokens)[2] != NULL && strcmp((instr_ptr->tokens)[2], "|") == 0) {
 			//syntax error check if user does not input 2 arguments with the pipe.
@@ -360,7 +381,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 											close(STDOUT_FILENO);
 											dup(fc);
 											printf("targethit");
-											my_execute(instr_ptr->tokens, i, queue, syncheck);
+											my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
 											close(fd);//Executeprocess
 											close(fc);//Executeprocess
 										}
@@ -390,7 +411,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 							if (fork() == 0) {
 								close(STDOUT_FILENO);
 								dup(fd);
-								my_execute(instr_ptr->tokens, i, queue, syncheck);
+								my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
 								close(fd);
 
 							}
@@ -428,7 +449,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 											close(STDOUT_FILENO);
 											dup(fc);
 
-											my_execute(instr_ptr->tokens, i, queue, syncheck);
+											my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
 											close(fd);//Executeprocess
 											close(fc);//Executeprocess
 										}
@@ -461,7 +482,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 									dup(fd);
 
 
-									my_execute(instr_ptr->tokens, i, queue, syncheck);
+									my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
 									close(fd);//Executeprocess
 
 								}
@@ -504,7 +525,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 
 			}
 			if (recieve != NULL) {
-				my_execute(instr_ptr->tokens, instr_ptr->numTokens, queue, syncheck);
+				my_execute(instr_ptr->tokens, instr_ptr->numTokens, queue, syncheck, cc);
 			}
 			//printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
 		}
@@ -714,7 +735,7 @@ char* expandEnv(const char * name) {
 	return value;
 
 }
-void my_execute(char **cmd, int size, struct Queue* queue, int bcheck) {
+void my_execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) {
 
 	int status;
 	int i;
@@ -773,6 +794,8 @@ void my_execute(char **cmd, int size, struct Queue* queue, int bcheck) {
 		}
 	}
 	//	cmd = (char**)realloc(cmd, (size + 1) * sizeof(char*));
+	int tempint = *cc;
+	*cc = tempint + 1;
 }
 
 //reallocates instruction array to hold another token
