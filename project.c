@@ -150,9 +150,11 @@ int main() {
 
 			int i;
 			int start = 0;
+		
 			for (i = 0; i < strlen(token); i++) {
+				
 				//pull out special characters and make them into a separate token in the instruction
-				if (token[i] == '|' || token[i] == '>' || token[i] == '<' || token[i] == '&') {
+				if (token[i] == '|' || token[i] == '>' || token[i] == '<' || token[i] == '&' ) {
 					if (i - start > 0) {
 						memcpy(temp, token + start, i - start);
 						temp[i - start] = '\0';
@@ -426,11 +428,9 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			for (i = 0; i < instr_ptr->numTokens; i++) {
 				if ((instr_ptr->tokens)[i] != NULL) {
 
-					check = strrchr(instr_ptr->tokens[i], '/');
-					check2 = strrchr(instr_ptr->tokens[i], '-');
-					check3 = strrchr(instr_ptr->tokens[i], '>');
+					check = strrchr(instr_ptr->tokens[i], '/');      //checks if it is path
+					check3 = strrchr(instr_ptr->tokens[i], '>');     //checks if their is an io redirection
 					check4 = strrchr(instr_ptr->tokens[i], '<');
-					check2Complete = check2 - instr_ptr->tokens[i];
 					if (check3 != NULL) {
 						recieve = NULL;
 
@@ -574,17 +574,18 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 						}
 						break;
 					}
-					else if (check == NULL) {
-						if (check2Complete != 0) {
+					else if (check == NULL && i ==0) {           //checks if it is a external command
+						//if (check2Complete != 0) {
 							recieve = checkForPath(instr_ptr->tokens[i]);
 							//printf("%s%d", recieve, i);
-						}
-						else {
-							recieve = instr_ptr->tokens[i];
-						}
+						//}
+					//	else {
+						//	recieve = instr_ptr->tokens[i];
+						//}
 					}
 					else {
-						recieve = path(instr_ptr->tokens[i], 0);
+						recieve = instr_ptr->tokens[i];
+						//recieve = path(instr_ptr->tokens[i], 0);
 						//	printf("%s%d", recieve, i);
 					}
 					//if (strcmp(recieve, instr_ptr->tokens[i]) == 0) {
@@ -617,16 +618,18 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 char* path(const char * name, int pass) {
 	int i;
 	int fullString = 1;
-	int catch22 = 0;
-	int begining = 0;
+	int catch22 = 0;                                //checks to see if their is already something in incmplete path
+	int begining = 0;                               //keeps track of where to start in the array
 	char *ptr;
-	char *file;
-	char *finisher;
-	char **incompletePath;
+	char *file;                                     //to check if their is a file in the wrong place        
+	char *finisher;                                 //finsished path
+	char **incompletePath;                          //array of strings that the path is seaperated into
 	printf("%d\n", name);
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
 	printf("%s\n", "11");
-	for (i = 0; i < strlen(name) + 1; i++) {
+	for (i = 0; i < strlen(name) + 1; i++) {        //goes through cstring and breaks it apart at ceartin values
+													//it then checks those values to see if their is an error 
+													//like a file in  the wrong place or if their is something that needs to be repplaced
 
 		//pull out special characters and make them into a separate token in the instruction
 		if (name[i] == '/' || name[i] == '\0') {
@@ -635,7 +638,7 @@ char* path(const char * name, int pass) {
 			memcpy(holder, name + begining, i - begining);
 			holder[i - begining] = '\0';
 
-			if (catch22 == 0) {
+			if (catch22 == 0) {                      //increases the size of incomplete path array
 
 				incompletePath = (char**)malloc(sizeof(char*));
 			}
@@ -645,36 +648,40 @@ char* path(const char * name, int pass) {
 			}
 
 			file = strrchr(holder, '.');
-			if (strcmp(holder, "./") == 0) {
+			if (strcmp(holder, "./") == 0) {		 //if thiers is ./ then it replaces it with current working direcory
+													 //after allocating space for it in incomplete paths. and adds and ending slash
 				printf("%s\n", "8");
 				incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + 2) * sizeof(char));
 				strcpy(incompletePath[catch22], getenv("PWD"));
 				strcat(incompletePath[catch22], "/");
 			}
-			else if (strcmp(holder, "../") == 0) {
+			else if (strcmp(holder, "../") == 0) {   //if thiers is ../ then it replaces it with directory before current working direcory
+													 //after allocating space for it in incomplete paths. and adds and ending slash
 
 
 				char* pWD = getenv("PWD");
-				ptr = strrchr(pWD, '/');
+				ptr = strrchr(pWD, '/');             //finds the last slash and replaces it with a null charecter
 
 				*ptr = '\0';
 				incompletePath[catch22] = (char *)malloc((strlen(pWD) + 2) * sizeof(char));
 				strcpy(incompletePath[catch22], pWD);
 				strcat(incompletePath[catch22], "/");
-				*ptr = '/';
+				*ptr = '/';							//puts charecter back
 			}
 			else if (file != NULL && name[i - 1] != '\0') {
-
+				//checks if it is a file
 				printf("%s\n", "there is a file where it is not suppose to be there");
 				return;
 			}
-			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {
+			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {    //if thiers is ~/ then it replaces it with home direcory
+																	   //after allocating space for it in incomplete paths. and adds and ending slash
 
 				incompletePath[catch22] = (char *)malloc((strlen(getenv("HOME")) + 2) * sizeof(char));
 				strcpy(incompletePath[catch22], getenv("HOME"));
 				strcat(incompletePath[catch22], "/");
 			}
-			else if ((strcmp(holder, "/") == 0) && catch22 == 0) {
+			else if ((strcmp(holder, "/") == 0) && catch22 == 0) {      //if thiers is ~/ then it replaces it with root direcory
+																		//after allocating space for it in incomplete paths. and adds and ending slash
 
 				if (getenv("ROOT") != NULL) {
 					incompletePath[catch22] = (char *)malloc((strlen(getenv("ROOT")) + 2) * sizeof(char));
@@ -688,7 +695,7 @@ char* path(const char * name, int pass) {
 			}
 			else {
 
-				if (catch22 == 0) {
+				if (catch22 == 0) {                                      //default replaces it to working directory
 					incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + strlen(holder) + 2) * sizeof(char));
 					strcpy(incompletePath[catch22], getenv("PWD"));
 					strcat(incompletePath[catch22], "/");
@@ -710,7 +717,7 @@ char* path(const char * name, int pass) {
 
 	}
 
-	for (i = 0; i < catch22; i++) {
+	for (i = 0; i < catch22; i++) {                                //puts string to together and puts it in a cstring from incomplete pat
 		if ((incompletePath)[i] != NULL)
 			fullString += (strlen(incompletePath[i]));
 		if (i == 0) {
@@ -730,7 +737,7 @@ char* path(const char * name, int pass) {
 
 	}
 
-	if (fileExist(finisher) == 1 || pass == 1) {
+	if (fileExist(finisher) == 1 || pass == 1) {                               //checks for file existence
 		return finisher;
 	}
 
@@ -742,15 +749,15 @@ char* path(const char * name, int pass) {
 
 char * checkForPath(char *extra) {
 	int i;
-	int begining = 0;
-	int count = 0;
-	char **incompletePath2;
-	char * paths = getenv("PATH");
-	char *holder2 = (char*)malloc((strlen(paths) + 1) * sizeof(char));
-	for (i = 0; i < strlen(paths) + 1; i++) {
+	int begining = 0;                    //where to begin the next parst
+	int count = 0;                       //size of incompletePath2
+	char **incompletePath2;              //holds possible absolute paths
+	char * paths = getenv("PATH");       //gets possible paths
+	char *holder2 = (char*)malloc((strlen(paths) + 1) * sizeof(char)); 
+	for (i = 0; i < strlen(paths) + 1; i++) {//parses path by :
 		if (paths[i] == ':' || paths[i] == '\0') {
 
-			if (count == 0) {
+			if (count == 0) {                //allocates size
 				incompletePath2 = (char**)malloc(sizeof(char*));
 			}
 			else {
@@ -771,14 +778,14 @@ char * checkForPath(char *extra) {
 
 
 	}
-	printf("%s\n", extra);
+	//printf("%s\n", extra);
 	/*	char * pathTest;
 	printf("%s\n", getenv("PATH"));
 	for (i = 0; i < count; i++) {
 		printf("%s\n",incompletePath2[i]);
 	}*/
 
-	for (i = 0; i < count; i++) {
+	for (i = 0; i < count; i++) {          //returns after confirming file exsitense
 		if (fileExist(incompletePath2[i]) == 1) {
 			return incompletePath2[i];
 		}
@@ -792,8 +799,8 @@ char * checkForPath(char *extra) {
 	}
 	return NULL;
 }
-int fileExist(char * absolutePath) {
-	if (access(absolutePath, F_OK) == -1)
+int fileExist(char * absolutePath) {      //checks if you can access file
+	if (access(absolutePath, F_OK) == -1) //returns 1 if you can access file
 	{
 		return 0;
 	}
