@@ -178,9 +178,11 @@ int main() {
 			token = NULL;
 			temp = NULL;
 		} while ('\n' != getchar());    //until end of line is reached
+		
 		addNull(&instr);
+		//printTokens(&instr);
 		inputAction(&instr, cmdqueue);
-		printTokens(&instr);
+		//printTokens(&instr);
 		clearInstruction(&instr);
 
 		// Testing to see if queue works
@@ -244,13 +246,13 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			// Non-Background Process
 			// printf("TOKEN COUNT NO ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 			printf("No Allocation:\n");
-			printTokens(instr_ptr);
+			//printTokens(instr_ptr);
 		}
 	}
 
 
 	if (syncheck == 0 || syncheck == 1) {
-
+		printf("No Allocation1:\n");
 		if (syncheck == 1) {
 			printf("Before Allocation:\n");
 			printTokens(instr_ptr);
@@ -269,8 +271,9 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			printTokens(instr_ptr);
 			//printf("TOKEN COUNT AFTER ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 		}
-
+		
 		if (strcmp((instr_ptr->tokens)[0], "echo") == 0) {
+			
 			for (i = 1; i < instr_ptr->numTokens - 1; i++) {
 				if (((instr_ptr->tokens)[i][0]) == '$') {
 					if (expandEnv((instr_ptr->tokens)[i]) == NULL) {
@@ -285,6 +288,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			}
 		}
 		else if (strcmp((instr_ptr->tokens)[0], "cd") == 0) {
+			printf("No Allocation6:\n");
 			if ((instr_ptr->tokens)[2] == NULL) {
 				if ((instr_ptr->tokens)[1] == NULL) {
 					chdir(getenv("HOME"));
@@ -305,6 +309,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 		}
 		//pipe command found in user input
 		else if ((instr_ptr->tokens)[1] != NULL && strcmp((instr_ptr->tokens)[1], "|") == 0 || (instr_ptr->tokens)[2] != NULL && strcmp((instr_ptr->tokens)[2], "|") == 0) {
+			printf("No Allocation5:\n");
 			//syntax error check if user does not input 2 arguments with the pipe.
 			if ((instr_ptr->tokens)[2] == NULL) {
 				printf("ERROR: invalid syntax, no 2nd argument found\n");
@@ -314,9 +319,27 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			}
 		}
 		else {
+			
 			for (i = 0; i < instr_ptr->numTokens; i++) {
-				if ((instr_ptr->tokens)[i] != NULL) {
+	
+				
+		/*		if (strcmp((instr_ptr->tokens)[i], "..") == 0 ) {
+		
+					
+					
+					instr_ptr->tokens[i] = (char *)realloc((instr_ptr->tokens)[i],(strlen((instr_ptr->tokens)[i]) + 1) * sizeof(char));
 
+					strcat(instr_ptr->tokens[i], "/");
+				
+				}
+				else if (strcmp((instr_ptr->tokens)[i], ".") == 0) {
+
+
+					instr_ptr->tokens[i] = (char *)realloc((instr_ptr->tokens)[i],(strlen((instr_ptr->tokens)[i]) + 1) * sizeof(char));
+					strcat(instr_ptr->tokens[i], "/");
+					
+				}*/
+				if ((instr_ptr->tokens)[i] != NULL) {
 					check = strrchr(instr_ptr->tokens[i], '/');
 					check2 = strrchr(instr_ptr->tokens[i], '-');
 					check3 = strrchr(instr_ptr->tokens[i], '>');
@@ -514,6 +537,9 @@ char* path(const char * name, int pass) {
 	char *file;
 	char *finisher;
 	char **incompletePath;
+	printf("%d\n", name);
+	printf("%d\n", name);
+	printf("%d\n", name);
 	printf("%d\n", name);
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
 	printf("%s\n", "11");
@@ -807,7 +833,7 @@ void clearInstruction(instruction* instr_ptr) {
 		free(instr_ptr->tokens[i]);
 
 	free(instr_ptr->tokens);
-
+	//printTokens(instr_ptr);
 	instr_ptr->tokens = NULL;
 	instr_ptr->numTokens = 0;
 }
