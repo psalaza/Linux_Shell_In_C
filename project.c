@@ -449,17 +449,16 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 									int fc = fileno(gate);
 									instr_ptr->tokens[i] = NULL;
 									if (target != NULL) {
-										if (fork() == 0) {//Child
+										if (fork() == 0) {
 											close(STDIN_FILENO);
 											dup(fd);
 											close(STDOUT_FILENO);
 											dup(fc);
-											printf("targethit");
 											my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
-											close(fd);//Executeprocess
-											close(fc);//Executeprocess
+											close(fd);
+											close(fc);
 										}
-										else {//Parent
+										else {
 											close(fc);
 											close(fd);
 										}
@@ -524,10 +523,10 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 											dup(fc);
 
 											my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
-											close(fd);//Executeprocess
-											close(fc);//Executeprocess
+											close(fd);
+											close(fc);
 										}
-										else {//Parent
+										else {
 											close(fc);
 											close(fd);
 										}
@@ -551,16 +550,16 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 							if (gate != NULL) {
 								int fd = fileno(gate);
 								instr_ptr->tokens[i] = NULL;
-								if (fork() == 0) {//Child
+								if (fork() == 0) {
 									close(STDIN_FILENO);
 									dup(fd);
 
 
 									my_execute(instr_ptr->tokens, i, queue, syncheck, cc);
-									close(fd);//Executeprocess
+									close(fd);
 
 								}
-								else {//Parent
+								else {
 									close(fd);
 								}
 							}
