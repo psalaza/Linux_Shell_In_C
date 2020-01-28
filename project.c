@@ -794,7 +794,7 @@ void printTokens(instruction* instr_ptr)
 {
 	int i;
 	printf("Tokens:\n");
-	for (i = 0; i < (instr_ptr->numTokens); i++) {
+	for (i = 0; i < (instr_ptr->numTokens-1); i++) {
 		if ((instr_ptr->tokens)[i] != NULL)
 			printf("%s\n", (instr_ptr->tokens)[i]);
 	}
@@ -802,6 +802,7 @@ void printTokens(instruction* instr_ptr)
 
 void clearInstruction(instruction* instr_ptr) {
 	int i;
+
 	for (i = 0; i < instr_ptr->numTokens; i++)
 		free(instr_ptr->tokens[i]);
 
