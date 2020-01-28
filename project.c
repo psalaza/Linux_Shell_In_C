@@ -965,10 +965,10 @@ void my_execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) 
 				(tempArray)[i] = cmd[i];
 			}
 			temprbp.command = tempArray;
-			//printf("2) The command is: ");
-			//for (i = 0; i < size - 1; i++) {
-			//	printf("%s ", temprbp.command[i]);
-			//}
+			printf("2) The command is: ");
+			for (i = 0; i < size - 1; i++) {
+				printf("%s ", temprbp.command[i]);
+			}
 
 			enqueue(queue, temprbp);
 			waitpid(pid, &status, -1);
