@@ -66,7 +66,7 @@ void enqueue(struct Queue* queue, RBP item)
 	queue->rear = (queue->rear + 1) % queue->capacity;
 	queue->array[queue->rear] = item;
 	queue->size = queue->size + 1;
-	printf("%d enqueued to queue\n", item);
+	//printf("%d enqueued to queue\n", item);
 }
 
 // Function to remove an item from queue.
@@ -127,14 +127,16 @@ int main() {
 	while (1) {
 
 		if (isEmpty(cmdqueue) == 0) {
-			int tempint, status, tester;
-			for (tempint = 0; tempint < cmdqueue->bcounter; tempint++) {
-				tester = waitpid(cmdqueue->array[tempint].PID, &status, WNOHANG);
-				if (tester != 0) {
-					printf("[%d]+    [%s]\n", cmdqueue->array[tempint].PIQ, cmdqueue->array[tempint].command[0]);
-				}
+      int tempint, status, i;
+      for (tempint = 0; tempint < cmdqueue->bcounter; tempint++) {
+        	if (waitpid(cmdqueue->array[tempint].PID, &status, WNOHANG) != 0) {}
+					else {
+          	printf("[%d]+    [", cmdqueue->array[tempint].PIQ);
+						//cmdqueue->array[tempint].command[0]);
+          	dequeue(cmdqueue);
+          }
 			}
-		}
+    }
 
 		printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
 
@@ -207,8 +209,8 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 
 	// Ignores leading '&' if it occurs
 	if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == 0)) {
-		printf("Before Allocation:\n");
-		printTokens(instr_ptr);
+		//printf("Before Allocation:\n");
+		//printTokens(instr_ptr);
 		//printf("CURRENT TOKEN COUNT BEFORE ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 		char **tempArray = malloc((instr_ptr->numTokens - 1) * sizeof(char *));
 		for (i = 1; i < instr_ptr->numTokens - 1; i++) {
@@ -216,11 +218,11 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 		}
 		free(instr_ptr->tokens);
 		instr_ptr->tokens = tempArray;
-		printf("Number of Tokens 1: %d\n", instr_ptr->numTokens);
+		//printf("Number of Tokens 1: %d\n", instr_ptr->numTokens);
 		instr_ptr->numTokens = instr_ptr->numTokens - 1;
-		printf("Number of Tokens 2: %d\n", instr_ptr->numTokens);
-		printf("After Allocation:\n");
-		printTokens(instr_ptr);
+		//printf("Number of Tokens 2: %d\n", instr_ptr->numTokens);
+		//printf("After Allocation:\n");
+		//printTokens(instr_ptr);
 		//printf("TOKEN COUNT AFTER ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 	}
 
@@ -243,8 +245,8 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			syncheck = 0;
 			// Non-Background Process
 			// printf("TOKEN COUNT NO ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
-			printf("No Allocation:\n");
-			printTokens(instr_ptr);
+			//printf("No Allocation:\n");
+			//printTokens(instr_ptr);
 		}
 	}
 
@@ -252,8 +254,8 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 	if (syncheck == 0 || syncheck == 1) {
 
 		if (syncheck == 1) {
-			printf("Before Allocation:\n");
-			printTokens(instr_ptr);
+			//printf("Before Allocation:\n");
+			//printTokens(instr_ptr);
 			//printf("CURRENT TOKEN COUNT BEFORE ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 			char **tempArray = malloc((instr_ptr->numTokens - 2) * sizeof(char *));
 			for (i = 0; i < (instr_ptr->numTokens - 2); i++) {
@@ -262,11 +264,11 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			(tempArray)[instr_ptr->numTokens - 2] = NULL;
 			free(instr_ptr->tokens);
 			instr_ptr->tokens = tempArray;
-			printf("Number of Tokens 1: %d\n", instr_ptr->numTokens);
+			//printf("Number of Tokens 1: %d\n", instr_ptr->numTokens);
 			instr_ptr->numTokens = instr_ptr->numTokens - 1;
-			printf("After Allocation:\n");
-			printf("Number of Tokens 2: %d\n", instr_ptr->numTokens);
-			printTokens(instr_ptr);
+			//printf("After Allocation:\n");
+			//printf("Number of Tokens 2: %d\n", instr_ptr->numTokens);
+			//printTokens(instr_ptr);
 			//printf("TOKEN COUNT AFTER ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 		}
 
@@ -314,24 +316,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 			}
 		}
 		else {
-			for (i = 0; i < instr_ptr->numTokens - 1; i++) {
-
-				if (strcmp((instr_ptr->tokens)[i], "..") == 0) {
-
-
-
-					instr_ptr->tokens[i] = (char *)realloc((instr_ptr->tokens)[i], (strlen((instr_ptr->tokens)[i]) + 1) * sizeof(char));
-
-					strcat(instr_ptr->tokens[i], "/");
-
-				}
-				else if (strcmp((instr_ptr->tokens)[i], ".") == 0) {
-
-
-					instr_ptr->tokens[i] = (char *)realloc((instr_ptr->tokens)[i], (strlen((instr_ptr->tokens)[i]) + 1) * sizeof(char));
-					strcat(instr_ptr->tokens[i], "/");
-
-				}
+			for (i = 0; i < instr_ptr->numTokens; i++) {
 				if ((instr_ptr->tokens)[i] != NULL) {
 
 					check = strrchr(instr_ptr->tokens[i], '/');
@@ -497,7 +482,6 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 					}
 					//if (strcmp(recieve, instr_ptr->tokens[i]) == 0) {
 					//}
-
 					if (recieve != NULL) {
 						instr_ptr->tokens[i] = (char *)malloc((strlen(recieve) + 1) * sizeof(char));
 						strcpy(instr_ptr->tokens[i], recieve);
@@ -508,7 +492,6 @@ void inputAction(instruction* instr_ptr, struct Queue* queue) {
 
 			}
 			if (recieve != NULL) {
-
 				my_execute(instr_ptr->tokens, instr_ptr->numTokens, queue, syncheck);
 			}
 			//printf("%s: NO SUCH COMMAND FOUND",(instr_ptr->tokens)[0]);
@@ -533,9 +516,9 @@ char* path(const char * name, int pass) {
 	char *file;
 	char *finisher;
 	char **incompletePath;
-
+	printf("%d\n", name);
 	char *holder = (char*)malloc((strlen(name) + 1) * sizeof(char));
-
+	printf("%s\n", "11");
 	for (i = 0; i < strlen(name) + 1; i++) {
 
 		//pull out special characters and make them into a separate token in the instruction
@@ -566,12 +549,10 @@ char* path(const char * name, int pass) {
 
 				char* pWD = getenv("PWD");
 				ptr = strrchr(pWD, '/');
-				printf("%s\n", name);
+
 				*ptr = '\0';
 				incompletePath[catch22] = (char *)malloc((strlen(pWD) + 2) * sizeof(char));
-				printf("%s\n", name);
 				strcpy(incompletePath[catch22], pWD);
-				printf("%s\n", name);
 				strcat(incompletePath[catch22], "/");
 				*ptr = '/';
 			}
@@ -642,9 +623,7 @@ char* path(const char * name, int pass) {
 
 	}
 
-
 	if (fileExist(finisher) == 1 || pass == 1) {
-
 		return finisher;
 	}
 
@@ -727,11 +706,11 @@ void my_execute(char **cmd, int size, struct Queue* queue, int bcheck) {
 
 	int status;
 	int i;
-	for (i = 0; i < size; i++) {
+	/*for (i = 0; i < size; i++) {
 		printf("is this the number %d", i);
 		printf("%s", cmd[i]);
 		printf("\n");
-	}
+	}*/
 	//cmd = (char**)realloc(cmd, (size + 1) * sizeof(char*));
 	//cmd[size] = NULL;
 	pid_t pid = fork();
@@ -752,12 +731,12 @@ void my_execute(char **cmd, int size, struct Queue* queue, int bcheck) {
 			temprbp.PIQ = queue->bcounter++;
 			temprbp.PID = pid;
 			temprbp.size = size - 1;
-			printf("The PID is: %d\n", pid);
-			printf("1) The command is: ");
-			for (i = 0; i < size - 1; i++) {
-				printf("%s ", cmd[i]);
-			}
-			printf("\n");
+			//printf("The PID is: %d\n", pid);
+			//printf("1) The command is: ");
+			//for (i = 0; i < size - 1; i++) {
+			//	printf("%s ", cmd[i]);
+			//}
+			//printf("\n");
 			/*temprbp.command = malloc((size - 1) * sizeof(char *));
 			for (i = 0; i < size - 1; i++) {
 			  strcpy(temprbp.command[i], cmd[i]);
@@ -768,14 +747,14 @@ void my_execute(char **cmd, int size, struct Queue* queue, int bcheck) {
 				(tempArray)[i] = cmd[i];
 			}
 			temprbp.command = tempArray;
-			printf("2) The command is: ");
-			for (i = 0; i < size - 1; i++) {
-				printf("%s ", temprbp.command[i]);
-			}
+			//printf("2) The command is: ");
+			//for (i = 0; i < size - 1; i++) {
+			//	printf("%s ", temprbp.command[i]);
+			//}
 
 			enqueue(queue, temprbp);
 			waitpid(pid, &status, -1);
-			printf("[%d]    [%f]\n", temprbp.PIQ, temprbp.PID);
+			printf("[%d]    [%d]\n", temprbp.PIQ, temprbp.PID);
 		}
 		else {
 			waitpid(pid, &status, 0);
@@ -817,7 +796,7 @@ void printTokens(instruction* instr_ptr)
 {
 	int i;
 	printf("Tokens:\n");
-	for (i = 0; i < (instr_ptr->numTokens); i++) {
+	for (i = 0; i < (instr_ptr->numTokens-1); i++) {
 		if ((instr_ptr->tokens)[i] != NULL)
 			printf("%s\n", (instr_ptr->tokens)[i]);
 	}
@@ -825,6 +804,7 @@ void printTokens(instruction* instr_ptr)
 
 void clearInstruction(instruction* instr_ptr) {
 	int i;
+
 	for (i = 0; i < instr_ptr->numTokens; i++)
 		free(instr_ptr->tokens[i]);
 
@@ -833,4 +813,3 @@ void clearInstruction(instruction* instr_ptr) {
 	instr_ptr->tokens = NULL;
 	instr_ptr->numTokens = 0;
 }
-
