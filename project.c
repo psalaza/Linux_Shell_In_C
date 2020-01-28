@@ -208,6 +208,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	char *check3;
 	char *check4;
 	char *check5;
+	char * checkforNull;
 	char dir[100];
 	getcwd(dir, 100);
 
@@ -330,7 +331,10 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 					if (chdir((instr_ptr->tokens)[1]) != 0)
 						perror((instr_ptr->tokens)[1]);
 					else {
-						setenv("PWD", path((instr_ptr->tokens)[1]), 1);
+						 checkforNull = path((instr_ptr->tokens)[1]);
+						if (checkforNull != NULL) {
+							setenv("PWD", checkforNull, 1);
+						}
 					}
 				}
 			}
