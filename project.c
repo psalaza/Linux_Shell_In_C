@@ -134,7 +134,10 @@ int main() {
         	if (waitpid(cmdqueue->array[tempint].PID, &status, WNOHANG) != 0) {}
 					else {
           	printf("[%d]+    [", cmdqueue->array[tempint].PIQ);
-						//cmdqueue->array[tempint].command[0]);
+						for (i = 0; i < cmdqueue->array[tempint].size - 1; i++) {
+							printf("%s ", cmdqueue->array[tempint].command[i]);
+						}
+						printf("\n");
           	dequeue(cmdqueue);
           }
 			}
@@ -965,10 +968,10 @@ void my_execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) 
 				(tempArray)[i] = cmd[i];
 			}
 			temprbp.command = tempArray;
-			printf("2) The command is: ");
+			/*printf("2) The command is: ");
 			for (i = 0; i < size - 1; i++) {
 				printf("%s ", temprbp.command[i]);
-			}
+			}*/
 
 			enqueue(queue, temprbp);
 			waitpid(pid, &status, -1);
