@@ -176,7 +176,7 @@ int main() {
         } while ('\n' != getchar());    //until end of line is reached
 		addNull(&instr);
     inputAction(&instr, cmdqueue);
-		printTokens(&instr);
+	printTokens(&instr);
     clearInstruction(&instr);
 
     // Testing to see if queue works
@@ -207,7 +207,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue){
     printTokens(instr_ptr);
     //printf("CURRENT TOKEN COUNT BEFORE ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
     char **tempArray = malloc((instr_ptr->numTokens - 2) * sizeof(char *));
-    for (i = 1; i < instr_ptr->numTokens-2; i++) {
+    for (i = 1; i < instr_ptr->numTokens-1; i++) {
       (tempArray)[i - 1] = (instr_ptr->tokens)[i];
     }
     free(instr_ptr->tokens);
@@ -250,7 +250,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue){
       printTokens(instr_ptr);
       //printf("CURRENT TOKEN COUNT BEFORE ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
       char **tempArray = malloc((instr_ptr->numTokens - 2) * sizeof(char *));
-      for (i = 0; i < (instr_ptr->numTokens - 2); i++) {
+      for (i = 0; i < (instr_ptr->numTokens - 1); i++) {
         (tempArray)[i] = (instr_ptr->tokens)[i];
       }
       free(instr_ptr->tokens);
@@ -315,7 +315,10 @@ void inputAction(instruction* instr_ptr, struct Queue* queue){
 					check3 = strrchr(instr_ptr->tokens[i], '>');
 					check4 = strrchr(instr_ptr->tokens[i], '<');
 					check2Complete = check2 - instr_ptr->tokens[i];
-					if (check3 != NULL) {
+					if (strcmp((instr_ptr->tokens)[i], "&") == 0) {
+						(instr_ptr->tokens)[i] == NULL;
+					}
+					else if (check3 != NULL) {
 						recieve = NULL;
 
 						if (i + 5 == instr_ptr->numTokens) {
@@ -461,6 +464,8 @@ void inputAction(instruction* instr_ptr, struct Queue* queue){
 					else if (check == NULL) {
 						if (check2Complete != 0) {
 							recieve = checkForPath(instr_ptr->tokens[i]);
+							if (recieve == NULL)
+								break;
 							//printf("%s%d", recieve, i);
 						}
 						else {
@@ -469,6 +474,8 @@ void inputAction(instruction* instr_ptr, struct Queue* queue){
 					}
 					else {
 						recieve = path(instr_ptr->tokens[i], 0);
+						if (recieve == NULL)
+							break;
 						//	printf("%s%d", recieve, i);
 					}
 					//if (strcmp(recieve, instr_ptr->tokens[i]) == 0) {
@@ -795,7 +802,9 @@ void printTokens(instruction* instr_ptr)
 
 void clearInstruction(instruction* instr_ptr) {
     int i;
-    for (i = 0; i < instr_ptr->numTokens; i++)
+
+    for (i = 0; i < instr_ptr->numTokens-1; i++)
+		printf("%s\n", (instr_ptr->tokens)[i]);
         free(instr_ptr->tokens[i]);
 
     free(instr_ptr->tokens);
