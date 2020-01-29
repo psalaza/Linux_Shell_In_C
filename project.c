@@ -732,7 +732,7 @@ char* path(const char * name, int pass) {
 			else if (file != NULL && name[i - 1] != '\0') {
 				//checks if it is a file
 				printf("%s\n", "there is a file where it is not suppose to be there");
-				return;
+				return NULL;
 			}
 			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {
 				//if thiers is ~/ then it replaces it with home direcory
