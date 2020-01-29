@@ -1,11 +1,3 @@
-//COP4610
-//Project 1 Starter Code
-//example code for initial parsing
-
-//*** if any problems are found with this code,
-//*** please report them to the TA
-
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -128,6 +120,8 @@ int main() {
 
 	while (1) {
 
+		printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
+
 		if (isEmpty(cmdqueue) == 0) {
 			int tempint, status, i;
 			for (tempint = 0; tempint < cmdqueue->bcounter; tempint++) {
@@ -137,13 +131,11 @@ int main() {
 					for (i = 0; i < cmdqueue->array[tempint].size - 1; i++) {
 						printf("%s ", cmdqueue->array[tempint].command[i]);
 					}
-					printf("\n");
+					printf("]\n");
 					dequeue(cmdqueue);
 				}
 			}
 		}
-
-		printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
 
 		// loop reads character sequences separated by whitespace
 		do {
@@ -204,7 +196,7 @@ int main() {
 // Renamed function
 void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	int i, syncheck;
-
+	int check2Complete;
 	char *check;
 	char *recieve;
 	char *check2;
@@ -321,6 +313,9 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 				else
 					printf("%s ", (instr_ptr->tokens[i]));
 			}
+			// Adds to command counter
+			int tempint = *cc;
+			*cc = tempint + 1;
 		}
 		else if (strcmp((instr_ptr->tokens)[0], "cd") == 0) {
 			if ((instr_ptr->tokens)[2] == NULL) {
@@ -361,6 +356,10 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			}
 			else
 				printf("Too many arguments\n");
+
+			// Adds to command counter
+			int tempint = *cc;
+			*cc = tempint + 1;
 		}
 		else if (strcmp((instr_ptr->tokens)[0], "jobs") == 0) {
 			int i;
@@ -373,6 +372,9 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 					// need to create command print function
 				}
 			}
+			// Adds to command counter
+			int tempint = *cc;
+			*cc = tempint + 1;
 		}
 		else if (strcmp((instr_ptr->tokens)[0], "exit") == 0) {
 			printf("Exiting now!\n\t Commands executed: %d\n", *cc);
@@ -484,7 +486,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 										switch (pid) {
 										case 0:
 											close(STDIN_FILENO);
-											dup(fd);                                                 //puts file at standared input 
+											dup(fd);                                                 //puts file at standared input
 											close(STDOUT_FILENO);
 											dup(fc);											     //put file at standared input
 											execute(instr_ptr->tokens, i, queue, syncheck, cc);
@@ -548,7 +550,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 									printf("the > sign canot be at the start of the input");
 								}
 								else {
-									FILE *target = fopen(path(instr_ptr->tokens[i + 1], 0), "r");   // same as above funtion with checkother accept read is what this program 
+									FILE *target = fopen(path(instr_ptr->tokens[i + 1], 0), "r");   // same as above funtion with checkother accept read is what this program
 									FILE * gate = fopen(path(instr_ptr->tokens[i + 3], 1), "w");	//sees first and write is what it see second
 									int fd = fileno(target);
 									int fc = fileno(gate);
@@ -732,7 +734,7 @@ char* path(const char * name, int pass) {
 			else if (file != NULL && name[i - 1] != '\0') {
 				//checks if it is a file
 				printf("%s\n", "there is a file where it is not suppose to be there");
-				return;
+				return NULL;
 			}
 			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {
 				//if thiers is ~/ then it replaces it with home direcory
