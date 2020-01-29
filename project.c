@@ -181,7 +181,7 @@ int main() {
 		} while ('\n' != getchar());    //until end of line is reached
 		addNull(&instr);                //add null early for use in execute
 		inputAction(&instr, cmdqueue, &commandcount);
-		printTokens(&instr);
+		//printTokens(&instr);
 		clearInstruction(&instr);
 
 		// Testing to see if queue works
@@ -432,7 +432,8 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 				default:
 					//parent
 					while ((pid = wait(&status)) != -1)
-						fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
+						continue;
+						//fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
 					break;
 
 				}
@@ -868,7 +869,7 @@ void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t) {
 
 	int s1 = t;
 	int i;
-	printf("PIPING!\n");
+	//printf("PIPING!\n");
 	int pid;
 
 	char temp[50];
@@ -894,6 +895,7 @@ void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t) {
 	char *d1[] = { c1[0],c1[1],c1[2],c1[3] };
 	char *d2[] = { c2[0],c2[1],c2[2],c2[3] };
 	char *d3[] = { c3[0],c3[1],c3[2],c3[3] };
+	/*
 	printf("Printing command arrays just to show\nPIPE RESULTS DO NOT SHOW UNTIL AFTER USER ENTERS EXIT\nwe also need to add command counter when pipe is used\n");
 	for (i = 0; i < s1; i++) {
 		printf("CMD1: %s\n", d1[i]);
@@ -904,7 +906,7 @@ void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t) {
 	for (i = 0; i < s1; i++) {
 		printf("CMD3: %s\n", d3[i]);
 	}
-
+*/
 	switch (pid = fork()) {
 	case 0:
 		//child
