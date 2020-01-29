@@ -956,41 +956,28 @@ void execute(char **commands, int size, struct Queue* queue, int bcheck, int *cc
 
 	else {
 
+		// Creates a new element in the background process queue to store command info
 		if (bcheck == 1) {
 			RBP temprbp;
 			temprbp.PIQ = queue->bcounter++;
 			temprbp.PID = pid;
 			temprbp.size = size - 1;
-			//printf("The PID is: %d\n", pid);
-			//printf("1) The command is: ");
-			//for (i = 0; i < size - 1; i++) {
-			//	printf("%s ", commands[i]);
-			//}
-			//printf("\n");
-			/*temprbp.command = malloc((size - 1) * sizeof(char *));
-			for (i = 0; i < size - 1; i++) {
-			  strcpy(temprbp.command[i], commands[i]);
-			}*/
 
 			char **tempArray = malloc((size - 1) * sizeof(char *));
 			for (i = 0; i < size - 1; i++) {
 				(tempArray)[i] = commands[i];
 			}
 			temprbp.command = tempArray;
-			/*printf("2) The command is: ");
-			for (i = 0; i < size - 1; i++) {
-				printf("%s ", temprbp.command[i]);
-			}*/
 
 			enqueue(queue, temprbp);
 			waitpid(pid, &status, -1);
+			// Prints queue position and PID
 			printf("[%d]    [%d]\n", temprbp.PIQ, temprbp.PID);
 		}
 		else {
 			waitpid(pid, &status, 0);
 		}
 	}
-	//	commands = (char**)realloc(commands, (size + 1) * sizeof(char*));
 	int tempint = *cc;
 	*cc = tempint + 1;
 }
