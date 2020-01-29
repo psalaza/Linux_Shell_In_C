@@ -183,9 +183,6 @@ int main() {
 		inputAction(&instr, cmdqueue, &commandcount);
 		//printTokens(&instr);
 		clearInstruction(&instr);
-
-		// Testing to see if queue works
-		// printf("%d dequeued from queue\n\n", dequeue(cmdqueue));
 	}
 
 	return 0;
@@ -802,7 +799,6 @@ char* path(const char * name, int pass) {
 	printf("this file does not exist");
 	return NULL;
 
-
 }
 char * checkForPath(char *extra) {
 	int i;
@@ -832,15 +828,7 @@ char * checkForPath(char *extra) {
 			count++;
 		}
 
-
-
 	}
-	//printf("%s\n", extra);
-	/*	char * pathTest;
-	printf("%s\n", getenv("PATH"));
-	for (i = 0; i < count; i++) {
-		printf("%s\n",incompletePath2[i]);
-	}*/
 
 	for (i = 0; i < count; i++) {          //returns after confirming file exsitense
 		if (fileExist(incompletePath2[i]) == 1) {
@@ -869,7 +857,6 @@ void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t) {
 
 	int s1 = t;
 	int i;
-	//printf("PIPING!\n");
 	int pid;
 
 	char temp[50];
@@ -888,25 +875,11 @@ void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t) {
 	c1[0] = temp;
 	c2[0] = temp2;
 
-	/*
-	*/
-
 
 	char *d1[] = { c1[0],c1[1],c1[2],c1[3] };
 	char *d2[] = { c2[0],c2[1],c2[2],c2[3] };
 	char *d3[] = { c3[0],c3[1],c3[2],c3[3] };
-	/*
-	printf("Printing command arrays just to show\nPIPE RESULTS DO NOT SHOW UNTIL AFTER USER ENTERS EXIT\nwe also need to add command counter when pipe is used\n");
-	for (i = 0; i < s1; i++) {
-		printf("CMD1: %s\n", d1[i]);
-	}
-	for (i = 0; i < s1; i++) {
-		printf("CMD2: %s\n", d2[i]);
-	}
-	for (i = 0; i < s1; i++) {
-		printf("CMD3: %s\n", d3[i]);
-	}
-*/
+
 	switch (pid = fork()) {
 	case 0:
 		//child
@@ -938,18 +911,10 @@ void execute(char **commands, int size, struct Queue* queue, int bcheck, int *cc
 
 	int status;
 	int i;
-	/*for (i = 0; i < size; i++) {
-		printf("is this the number %d", i);
-		printf("%s", commands[i]);
-		printf("\n");
-	}*/
-	//commands = (char**)realloc(commands, (size + 1) * sizeof(char*));
-	//commands[size] = NULL;
+
 	pid_t pid = fork();                                          //based on slides gets pid for use i wait
 
 	if (pid == 0) {                                              //if it is a child do this otherwise wait
-
-
 
 		execv(commands[0], commands);
 		fprintf("Problem executing %s\n", commands[0]);
