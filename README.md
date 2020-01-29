@@ -4,7 +4,7 @@ Project 1: Implementing a Shell
 Group Members: Charles Harris, Pedro Salazar, Spencer Lewis
 
 File Listing:<br/>
-makefile,  project.c, gitlog.txt
+gitlog.txt, README.md, makefile,  project.c
 
 Makefile Description:<br/>
 In order to run the implemented shell:<br/>
