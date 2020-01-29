@@ -4,7 +4,7 @@ Project 1: Implementing a Shell
 Group Members: Charles Harris, Pedro Salazar, Spencer Lewis
 
 File Listing:<br/>
-makefile,  project.c
+makefile,  project.c, gitlog.txt
 
 Makefile Description:<br/>
 In order to run the implemented shell:<br/>
@@ -26,5 +26,3 @@ Division of Labor:<br/>
   Spencer Lewis: Set up github (parsing file), Env Variables,<br/>
   Prompt, Background Processing, exit & jobs commands<br/>
   Comments and Documentation<br/>
-    
-Git Commit Log: NEEDS TO BE ADDED
