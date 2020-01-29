@@ -102,7 +102,7 @@ RBP rear(struct Queue* queue)
 	}
 	return queue->array[queue->rear];
 }
-void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t);
+void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t);
 void addToken(instruction* instr_ptr, char* tok);
 void printTokens(instruction* instr_ptr);
 void clearInstruction(instruction* instr_ptr);
@@ -112,7 +112,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc);
 char* path(const char * name, int pass);
 char * checkForPath(char *extra);
 int fileExist(char * absolutePath);
-void execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc);
+void execute(char **commands, int size, struct Queue* queue, int bcheck, int *cc);
 
 int main() {
 	char* token = NULL;
@@ -129,19 +129,19 @@ int main() {
 	while (1) {
 
 		if (isEmpty(cmdqueue) == 0) {
-      int tempint, status, i;
-      for (tempint = 0; tempint < cmdqueue->bcounter; tempint++) {
-        	if (waitpid(cmdqueue->array[tempint].PID, &status, WNOHANG) != 0) {}
-					else {
-          	printf("[%d]+    [", cmdqueue->array[tempint].PIQ);
-						for (i = 0; i < cmdqueue->array[tempint].size - 1; i++) {
-							printf("%s ", cmdqueue->array[tempint].command[i]);
-						}
-						printf("\n");
-          	dequeue(cmdqueue);
-          }
+			int tempint, status, i;
+			for (tempint = 0; tempint < cmdqueue->bcounter; tempint++) {
+				if (waitpid(cmdqueue->array[tempint].PID, &status, WNOHANG) != 0) {}
+				else {
+					printf("[%d]+    [", cmdqueue->array[tempint].PIQ);
+					for (i = 0; i < cmdqueue->array[tempint].size - 1; i++) {
+						printf("%s ", cmdqueue->array[tempint].command[i]);
+					}
+					printf("\n");
+					dequeue(cmdqueue);
+				}
 			}
-    }
+		}
 
 		printf("%s@%s: %s> ", expandEnv("$USER"), expandEnv("$MACHINE"), expandEnv("$PWD"));
 
@@ -157,7 +157,7 @@ int main() {
 			for (i = 0; i < strlen(token); i++) {
 
 				//pull out special characters and make them into a separate token in the instruction
-				if (token[i] == '|' || token[i] == '>' || token[i] == '<' || token[i] == '&' ) {
+				if (token[i] == '|' || token[i] == '>' || token[i] == '<' || token[i] == '&') {
 					if (i - start > 0) {
 						memcpy(temp, token + start, i - start);
 						temp[i - start] = '\0';
@@ -187,7 +187,7 @@ int main() {
 			token = NULL;
 			temp = NULL;
 		} while ('\n' != getchar());    //until end of line is reached
-		addNull(&instr);
+		addNull(&instr);                //add null early for use in execute
 		inputAction(&instr, cmdqueue, &commandcount);
 		printTokens(&instr);
 		clearInstruction(&instr);
@@ -208,24 +208,24 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	char *check;
 	char *recieve;
 	char *check2;
-	char *check3;
-	char *check4;
-	char *check5;
+	char *check4output;
+	char *check4input;
+	char *check4other;
 	char * checkforNull;
 	char dir[100];
 	getcwd(dir, 100);
 
 
-	int pid,status;
+	int pid, status;
 	int fd[2];
 
 	char *CMD1[4];
 	char *CMD2[4];
 	char *CMD3[4];
 	int c1 = 0, c2 = 0, c3 = 0;
-	int s1 = sizeof(CMD1)/sizeof(CMD1[0]);
+	int s1 = sizeof(CMD1) / sizeof(CMD1[0]);
 	int p;
-	for(p=0; p < s1;p++){
+	for (p = 0; p < s1; p++) {
 		CMD1[p] = NULL;
 		CMD2[p] = NULL;
 		CMD3[p] = NULL;
@@ -234,10 +234,10 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	int k;
 	int pp = 0;
 	int ret;
-	for(k = 0; k < instr_ptr->numTokens;k++){
-		if((instr_ptr->tokens)[k] != NULL){
+	for (k = 0; k < instr_ptr->numTokens; k++) {
+		if ((instr_ptr->tokens)[k] != NULL) {
 			ret = strcmp((instr_ptr->tokens)[k], "|");
-			if(ret == 0)
+			if (ret == 0)
 				break;
 		}
 
@@ -334,7 +334,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 					if (chdir((instr_ptr->tokens)[1]) != 0)
 						perror((instr_ptr->tokens)[1]);
 					else {
-						if (strcmp((instr_ptr->tokens)[1], "..") == 0) {
+						if (strcmp((instr_ptr->tokens)[1], "..") == 0) {                   //path needs a slash to help it understand if one of these values appear
 
 							instr_ptr->tokens[1] = (char *)realloc((instr_ptr->tokens)[1], (strlen((instr_ptr->tokens)[1]) + 1) * sizeof(char));
 							strcat(instr_ptr->tokens[1], "/");
@@ -381,45 +381,45 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			}
 			else {
 				while (1) {
-				int tempint, status, i;
-	      for (tempint = 0; tempint < queue->bcounter; tempint++) {
-	        	if (waitpid(queue->array[tempint].PID, &status, WNOHANG) != 0) {}
+					int tempint, status, i;
+					for (tempint = 0; tempint < queue->bcounter; tempint++) {
+						if (waitpid(queue->array[tempint].PID, &status, WNOHANG) != 0) {}
 						else {
-	          	printf("[%d]+    [",queue->array[tempint].PIQ);
+							printf("[%d]+    [", queue->array[tempint].PIQ);
 							//queue->array[tempint].command[0]);
-	          	dequeue(queue);
-	          }
-				}
+							dequeue(queue);
+						}
+					}
 				}
 			}
 		}
 		//pipe command found in user input
-		else if(ret == 0){
+		else if (ret == 0) {
 
-			for(k = 0; k < instr_ptr->numTokens;k++){
+			for (k = 0; k < instr_ptr->numTokens; k++) {
 
-				if((instr_ptr->tokens)[k] != NULL){
+				if ((instr_ptr->tokens)[k] != NULL) {
 					int q = 0;
-					if(strcmp((instr_ptr->tokens)[k],"|") == 0){
+					if (strcmp((instr_ptr->tokens)[k], "|") == 0) {
 						q = 1;
 						temp = temp + 1;
 					}
-					if(q == 0){
+					if (q == 0) {
 
-						switch(temp){
+						switch (temp) {
 
-							case 0:
-								CMD1[c1] = (instr_ptr->tokens)[k];
-								c1++;
-								break;
-							case 1:
-								CMD2[c2] = (instr_ptr->tokens)[k];
-								c2++;
+						case 0:
+							CMD1[c1] = (instr_ptr->tokens)[k];
+							c1++;
 							break;
-							case 2:
-								CMD3[c3] = (instr_ptr->tokens)[k];
-								c3++;
-								break;
+						case 1:
+							CMD2[c2] = (instr_ptr->tokens)[k];
+							c2++;
+							break;
+						case 2:
+							CMD3[c3] = (instr_ptr->tokens)[k];
+							c3++;
+							break;
 						}
 					}
 				}
@@ -427,27 +427,27 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			}
 
 
-			if((instr_ptr->tokens)[2] == NULL){
+			if ((instr_ptr->tokens)[2] == NULL) {
 				printf("ERROR: invalid syntax, no 2nd argument found\n");
 			}
-			else{
+			else {
 
 				// Adds to command counter
 				int tempint = *cc;
 				*cc = tempint + 1;
 
 				pipe(fd);
-				switch(pid = fork()){
-					case 0:
-						//child
-						mypipe(fd,CMD1,CMD2,CMD3,s1);
-						exit(0);
+				switch (pid = fork()) {
+				case 0:
+					//child
+					mypipe(fd, CMD1, CMD2, CMD3, s1);
+					exit(0);
 
-					default:
-						//parent
-						while ((pid = wait(&status)) != -1)
-							fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
-						break;
+				default:
+					//parent
+					while ((pid = wait(&status)) != -1)
+						fprintf(stderr, "process %d exits with %d\n", pid, WIFSTOPPED(status));
+					break;
 
 				}
 
@@ -457,26 +457,26 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			for (i = 0; i < instr_ptr->numTokens; i++) {
 				if ((instr_ptr->tokens)[i] != NULL) {
 
-					check = strrchr(instr_ptr->tokens[i], '/');      //checks if it is path
-					check3 = strrchr(instr_ptr->tokens[i], '>');     //checks if their is an io redirection
-					check4 = strrchr(instr_ptr->tokens[i], '<');
-					if (check3 != NULL) {
+					check = strrchr(instr_ptr->tokens[i], '/');            //checks if it is path
+					check4output = strrchr(instr_ptr->tokens[i], '>');     //checks if their is an io redirection to put infrormation
+					check4input = strrchr(instr_ptr->tokens[i], '<');
+					if (check4output != NULL) {
 						recieve = NULL;
 
 						if (i + 5 == instr_ptr->numTokens) {
 
-							check5 = strrchr(instr_ptr->tokens[i + 2], '<');
-							if (check5 != NULL) {
+							check4other = strrchr(instr_ptr->tokens[i + 2], '<');
+							if (check4other != NULL) {
 
 								if (i == 0) {
-									printf("the greater then or less then sign canot be at the start of the input");
+									printf("< canot be at the start of the input");
 								}
 								else {
-									FILE *target = fopen(path(instr_ptr->tokens[i + 3], 0), "r");
-									FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");
-									int fd = fileno(target);
-									int fc = fileno(gate);
-									instr_ptr->tokens[i] = NULL;
+									FILE *target = fopen(path(instr_ptr->tokens[i + 3], 0), "r");    //read file
+									FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");     //write/create file
+									int fd = fileno(target);                                         //get file number
+									int fc = fileno(gate);                                           //get file number
+									instr_ptr->tokens[i] = NULL;                                     //so it only execute to this point
 									if (target != NULL) {
 										int status;
 										pid_t pid = fork();
@@ -484,16 +484,16 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 										switch (pid) {
 										case 0:
 											close(STDIN_FILENO);
-											dup(fd);
+											dup(fd);                                                 //puts file at standared input 
 											close(STDOUT_FILENO);
-											dup(fc);
+											dup(fc);											     //put file at standared input
 											execute(instr_ptr->tokens, i, queue, syncheck, cc);
 											close(fd);
 											close(fc);
 											exit(1);
 											break;
 										default:
-											waitpid(pid, &status, 0);
+											waitpid(pid, &status, 0);                                //wait so that it doesnt start so it doesnt start something else till this part is done
 											close(fc);
 											close(fd);
 											break;
@@ -508,16 +508,16 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 							}
 						}
 						else if (i == 0) {
-							printf("the greater then or less then sign cannot be at the start of the input");
+							printf("the <  sign cannot be at the start of the input");
 						}
 						else if (i + 2 == instr_ptr->numTokens) {
-							printf("the greater then or less then sign cannot be at the end of the input");
+							printf("< then sign cannot be at the end of the input");
 						}
 						else if (i + 3 == instr_ptr->numTokens) {
-							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");
-							int fd = fileno(gate);
-							instr_ptr->tokens[i] = NULL;
-							switch (fork()) {
+							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 1), "w");              //write/create file
+							int fd = fileno(gate);                                                    //gets fileno
+							instr_ptr->tokens[i] = NULL;                                              //information for end of file
+							switch (fork()) {                                                         //this doenst not have a major effect on program so i just let it run
 							case 0:
 								close(STDOUT_FILENO);
 								dup(fd);
@@ -533,24 +533,23 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 						}
 
 						else {
-							printf("%d%d", i, instr_ptr->numTokens);
-							printf("there seems to ba file after after input");
+							printf("there seems to ba file after after output");
 						}
 
 						break;
 					}
-					else if (check4 != NULL) {
+					else if (check4input != NULL) {                                                  //sees if thier is an <
 						recieve = NULL;
 
 						if (i + 5 == instr_ptr->numTokens) {
-							check5 = strrchr(instr_ptr->tokens[i + 2], '>');
-							if (check5 != NULL) {
+							check4other = strrchr(instr_ptr->tokens[i + 2], '>');                   //checks for >
+							if (check4other != NULL) {
 								if (i == 0) {
-									printf("the greater then or less then sign canot be at the start of the input");
+									printf("the > sign canot be at the start of the input");
 								}
 								else {
-									FILE *target = fopen(path(instr_ptr->tokens[i + 1], 0), "r");
-									FILE * gate = fopen(path(instr_ptr->tokens[i + 3], 1), "w");
+									FILE *target = fopen(path(instr_ptr->tokens[i + 1], 0), "r");   // same as above funtion with checkother accept read is what this program 
+									FILE * gate = fopen(path(instr_ptr->tokens[i + 3], 1), "w");	//sees first and write is what it see second
 									int fd = fileno(target);
 									int fc = fileno(gate);
 									int status;
@@ -587,13 +586,13 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 							}
 						}
 						else if (i == 0) {
-							printf("the greater then or less then sign canot be at the start of the input");
+							printf("the > canot be at the start of the input");
 						}
 						else if (i + 2 == instr_ptr->numTokens) {
-							printf("the greater then or less then sign canot be at the end of the input");
+							printf("the >  sign canot be at the end of the input");
 						}
 						else if (i + 3 == instr_ptr->numTokens) {
-							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 0), "r");
+							FILE * gate = fopen(path(instr_ptr->tokens[i + 1], 0), "r");    //just reads
 							if (gate != NULL) {
 								int fd = fileno(gate);
 								instr_ptr->tokens[i] = NULL;
@@ -602,11 +601,11 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 
 								switch (pid) {
 								case 0:
-									close(STDIN_FILENO);
+									close(STDIN_FILENO);                                    //close standared input so it can put a new file in standaredinput
 									dup(fd);
 									execute(instr_ptr->tokens, i, queue, syncheck, cc);
 									close(fd);
-									exit(1);
+									exit(1);                                                //exit so that it doesnt end up in an endless loop
 									break;
 								default:
 									waitpid(pid, &status, 0);
@@ -624,14 +623,14 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 						}
 						break;
 					}
-					else if (check == NULL && i ==0) {           //checks if it is a external command
+					else if (check == NULL && i == 0) {           //checks if it is a external command
 						//if (check2Complete != 0) {
-							recieve = checkForPath(instr_ptr->tokens[i]);
-							//printf("%s%d", recieve, i);
-						//}
-					//	else {
-						//	recieve = instr_ptr->tokens[i];
-						//}
+						recieve = checkForPath(instr_ptr->tokens[i]);
+						//printf("%s%d", recieve, i);
+					//}
+				//	else {
+					//	recieve = instr_ptr->tokens[i];
+					//}
 					}
 					else {
 						recieve = instr_ptr->tokens[i];
@@ -680,7 +679,7 @@ char* path(const char * name, int pass) {
 													//it then checks those values to see if their is an error
 													//like a file in  the wrong place or if their is something that needs to be repplaced
 
-		//pull out special characters and make them into a separate token in the instruction
+													//pull out special characters and make them into a separate token in the instruction
 		if (name[i] == '/' || name[i] == '\0') {
 
 			i++;
@@ -735,8 +734,9 @@ char* path(const char * name, int pass) {
 				printf("%s\n", "there is a file where it is not suppose to be there");
 				return;
 			}
-			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {    //if thiers is ~/ then it replaces it with home direcory
-																	   //after allocating space for it in incomplete paths. and adds and ending slash
+			else if ((strcmp(holder, "~/") == 0) && catch22 == 0) {
+				//if thiers is ~/ then it replaces it with home direcory
+				//after allocating space for it in incomplete paths. and adds and ending slash
 
 
 				if (name[i] != '\0') {
@@ -750,8 +750,9 @@ char* path(const char * name, int pass) {
 
 				}
 			}
-			else if ((strcmp(holder, "/") == 0) && catch22 == 0) {      //if thiers is / then it replaces it with root direcory
-																		//after allocating space for it in incomplete paths. and adds and ending slash
+			else if ((strcmp(holder, "/") == 0) && catch22 == 0) {
+				//if thiers is / then it replaces it with root direcory
+				//after allocating space for it in incomplete paths. and adds and ending slash
 
 				if (getenv("ROOT") != NULL) {
 					incompletePath[catch22] = (char *)malloc((strlen(getenv("ROOT")) + 2) * sizeof(char));
@@ -765,7 +766,7 @@ char* path(const char * name, int pass) {
 			}
 			else {
 
-				if (catch22 == 0) {                                      //default replaces it to working directory
+				if (catch22 == 0) {                    //default replaces it to working directory
 					incompletePath[catch22] = (char *)malloc((strlen(getenv("PWD")) + strlen(holder) + 2) * sizeof(char));
 					strcpy(incompletePath[catch22], getenv("PWD"));
 					strcat(incompletePath[catch22], "/");
@@ -787,7 +788,7 @@ char* path(const char * name, int pass) {
 
 	}
 
-	for (i = 0; i < catch22; i++) {                                //puts string to together and puts it in a cstring from incomplete pat
+	for (i = 0; i < catch22; i++) {                    //puts string to together and puts it in a cstring from incomplete pat
 		if ((incompletePath)[i] != NULL)
 			fullString += (strlen(incompletePath[i]));
 		if (i == 0) {
@@ -807,7 +808,7 @@ char* path(const char * name, int pass) {
 
 	}
 
-	if (fileExist(finisher) == 1 || pass == 1) {                               //checks for file existence
+	if (fileExist(finisher) == 1 || pass == 1) {              //checks for file existence
 		return finisher;
 	}
 
@@ -877,7 +878,7 @@ int fileExist(char * absolutePath) {      //checks if you can access file
 }
 
 
-void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
+void mypipe(int fd[], char *c1[], char* c2[], char *c3[], int t) {
 
 	int s1 = t;
 	int i;
@@ -885,52 +886,52 @@ void mypipe(int fd[],char *c1[], char* c2[], char *c3[],int t){
 	int pid;
 
 	char temp[50];
-	strcpy(temp,"/bin/");
-	strcat(temp,c1[0]);
+	strcpy(temp, "/bin/");
+	strcat(temp, c1[0]);
 
 	char temp2[50];
-	strcpy(temp2,"/bin/");
-	strcat(temp2,c2[0]);
-	if(c3[0] != NULL){
+	strcpy(temp2, "/bin/");
+	strcat(temp2, c2[0]);
+	if (c3[0] != NULL) {
 		char temp3[50];
-		strcpy(temp3,"/bin/");
-		strcat(temp3,c3[0]);
+		strcpy(temp3, "/bin/");
+		strcat(temp3, c3[0]);
 		c3[0] = temp3;
 	}
 	c1[0] = temp;
 	c2[0] = temp2;
 
-/*
-*/
+	/*
+	*/
 
 
-	char *d1[] = {c1[0],c1[1],c1[2],c1[3]};
-	char *d2[] = {c2[0],c2[1],c2[2],c2[3]};
-	char *d3[] = {c3[0],c3[1],c3[2],c3[3]};
+	char *d1[] = { c1[0],c1[1],c1[2],c1[3] };
+	char *d2[] = { c2[0],c2[1],c2[2],c2[3] };
+	char *d3[] = { c3[0],c3[1],c3[2],c3[3] };
 	printf("Printing command arrays just to show\nPIPE RESULTS DO NOT SHOW UNTIL AFTER USER ENTERS EXIT\nwe also need to add command counter when pipe is used\n");
-		for(i = 0; i < s1; i++){
-			printf("CMD1: %s\n",d1[i]);
-		}
-		for(i = 0; i < s1; i++){
-			printf("CMD2: %s\n",d2[i]);
-		}
-		for(i = 0; i < s1; i++){
-			printf("CMD3: %s\n",d3[i]);
-		}
+	for (i = 0; i < s1; i++) {
+		printf("CMD1: %s\n", d1[i]);
+	}
+	for (i = 0; i < s1; i++) {
+		printf("CMD2: %s\n", d2[i]);
+	}
+	for (i = 0; i < s1; i++) {
+		printf("CMD3: %s\n", d3[i]);
+	}
 
-	switch(pid = fork()){
-		case 0 :
-			//child
-			dup2(fd[0],0);
-			close(fd[1]);
-			execv(d2[0],d2);
-			perror(d2[0]);
-		default:
-			//parent
-			dup2(fd[1],1);
-			close(fd[0]);
-			execv(d1[0],d1);
-			perror(d1[0]);
+	switch (pid = fork()) {
+	case 0:
+		//child
+		dup2(fd[0], 0);
+		close(fd[1]);
+		execv(d2[0], d2);
+		perror(d2[0]);
+	default:
+		//parent
+		dup2(fd[1], 1);
+		close(fd[0]);
+		execv(d1[0], d1);
+		perror(d1[0]);
 
 	}
 }
@@ -945,30 +946,30 @@ char* expandEnv(const char * name) {
 	return value;
 
 }
-void execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) {
+void execute(char **commands, int size, struct Queue* queue, int bcheck, int *cc) {
 
 	int status;
 	int i;
 	/*for (i = 0; i < size; i++) {
 		printf("is this the number %d", i);
-		printf("%s", cmd[i]);
+		printf("%s", commands[i]);
 		printf("\n");
 	}*/
-	//cmd = (char**)realloc(cmd, (size + 1) * sizeof(char*));
-	//cmd[size] = NULL;
-	pid_t pid = fork();
+	//commands = (char**)realloc(commands, (size + 1) * sizeof(char*));
+	//commands[size] = NULL;
+	pid_t pid = fork();                                          //based on slides gets pid for use i wait
 
-	if (pid == 0) {
+	if (pid == 0) {                                              //if it is a child do this otherwise wait
 
-		//Child
 
-		execv(cmd[0], cmd);
-		fprintf("Problem executing %s\n", cmd[0]);
+
+		execv(commands[0], commands);
+		fprintf("Problem executing %s\n", commands[0]);
 		exit(1);
 	}
 
 	else {
-		//Parent
+
 		if (bcheck == 1) {
 			RBP temprbp;
 			temprbp.PIQ = queue->bcounter++;
@@ -977,17 +978,17 @@ void execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) {
 			//printf("The PID is: %d\n", pid);
 			//printf("1) The command is: ");
 			//for (i = 0; i < size - 1; i++) {
-			//	printf("%s ", cmd[i]);
+			//	printf("%s ", commands[i]);
 			//}
 			//printf("\n");
 			/*temprbp.command = malloc((size - 1) * sizeof(char *));
 			for (i = 0; i < size - 1; i++) {
-			  strcpy(temprbp.command[i], cmd[i]);
+			  strcpy(temprbp.command[i], commands[i]);
 			}*/
 
 			char **tempArray = malloc((size - 1) * sizeof(char *));
 			for (i = 0; i < size - 1; i++) {
-				(tempArray)[i] = cmd[i];
+				(tempArray)[i] = commands[i];
 			}
 			temprbp.command = tempArray;
 			/*printf("2) The command is: ");
@@ -1003,7 +1004,7 @@ void execute(char **cmd, int size, struct Queue* queue, int bcheck, int *cc) {
 			waitpid(pid, &status, 0);
 		}
 	}
-	//	cmd = (char**)realloc(cmd, (size + 1) * sizeof(char*));
+	//	commands = (char**)realloc(commands, (size + 1) * sizeof(char*));
 	int tempint = *cc;
 	*cc = tempint + 1;
 }
@@ -1041,7 +1042,7 @@ void printTokens(instruction* instr_ptr)
 {
 	int i;
 	printf("Tokens:\n");
-	for (i = 0; i < (instr_ptr->numTokens-1); i++) {
+	for (i = 0; i < (instr_ptr->numTokens - 1); i++) {
 		if ((instr_ptr->tokens)[i] != NULL)
 			printf("%s\n", (instr_ptr->tokens)[i]);
 	}
