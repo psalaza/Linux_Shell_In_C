@@ -204,7 +204,7 @@ int main() {
 // Renamed function
 void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	int i, syncheck;
-	int check2Complete;
+
 	char *check;
 	char *recieve;
 	char *check2;
