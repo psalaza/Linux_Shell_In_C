@@ -614,7 +614,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 								}
 							}
 							else {
-								printf("this file does not exist");
+							//	printf("this file does not exist");
 
 							}
 						}
@@ -812,7 +812,7 @@ char* path(const char * name, int pass) {
 		return finisher;
 	}
 
-	printf("can't find file");
+	printf("this file does not exist");
 	return NULL;
 
 
