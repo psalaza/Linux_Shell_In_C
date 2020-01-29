@@ -30,4 +30,9 @@ Division of Labor:<br/>
 Known Bugs:<br/>
   1) Extra Spaces - Adding extra spaces to the end of a command<br/>
   can cause the parser to misread the command<br/>
-  2) 
+  2) Background Processes - some processes such as 'ls' processes<br/>
+  run perfectly as a background process. Others, like some redirects<br/>
+  or pipes cause the program to crash. This is most likely due to a path<br/>
+  resolution error when the & is removed from the command; however, we do<br/>
+  not understand why this does not affect ls commands.
+  3) Pipes - 
