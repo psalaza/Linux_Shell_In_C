@@ -35,4 +35,8 @@ Known Bugs:<br/>
   or pipes cause the program to crash. This is most likely due to a path<br/>
   resolution error when the & is removed from the command; however, we do<br/>
   not understand why this does not affect ls commands.
-  3) Pipes - 
+  3) Printing completed background commands - when trying to save the<br/>
+  commands to print when the processes are finished there is a loss of<br/>
+  memory and nothing will print from the array. This is most likely a<br/>
+  pointer issue we did not have enough time to fix.
+  
