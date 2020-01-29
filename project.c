@@ -237,31 +237,21 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 
 	// Ignores leading '&' if it occurs
 	if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == 0)) {
-		//printf("Before Allocation:\n");
-		//printTokens(instr_ptr);
-		//printf("CURRENT TOKEN COUNT BEFORE ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 		char **tempArray = malloc((instr_ptr->numTokens - 1) * sizeof(char *));
 		for (i = 1; i < instr_ptr->numTokens - 1; i++) {
 			(tempArray)[i - 1] = (instr_ptr->tokens)[i];
 		}
 		free(instr_ptr->tokens);
 		instr_ptr->tokens = tempArray;
-		//printf("Number of Tokens 1: %d\n", instr_ptr->numTokens);
 		instr_ptr->numTokens = instr_ptr->numTokens - 1;
-		//printf("Number of Tokens 2: %d\n", instr_ptr->numTokens);
-		//printf("After Allocation:\n");
-		//printTokens(instr_ptr);
-		//printf("TOKEN COUNT AFTER ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 	}
 
 	for (i = 0; i < instr_ptr->numTokens - 1; i++)
 	{
 		if ((strcmp((instr_ptr->tokens)[i], "&") == 0) && (i == instr_ptr->numTokens - 2)) {
-
+			// This is a Background process
 			syncheck = 1;
-
 			break;
-			// Background process needs to be initialized here
 		}
 		else if (strcmp((instr_ptr->tokens)[i], "&") == 0) {
 			syncheck = 2;
@@ -272,9 +262,6 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 		else {
 			syncheck = 0;
 			// Non-Background Process
-			// printf("TOKEN COUNT NO ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
-			//printf("No Allocation:\n");
-			//printTokens(instr_ptr);
 		}
 	}
 
@@ -282,9 +269,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 	if (syncheck == 0 || syncheck == 1) {
 
 		if (syncheck == 1) {
-			//printf("Before Allocation:\n");
-			//printTokens(instr_ptr);
-			//printf("CURRENT TOKEN COUNT BEFORE ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
+			// Deletes old command and replaces with a new array without '&'
 			char **tempArray = malloc((instr_ptr->numTokens - 2) * sizeof(char *));
 			for (i = 0; i < (instr_ptr->numTokens - 2); i++) {
 				(tempArray)[i] = (instr_ptr->tokens)[i];
@@ -292,12 +277,7 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			(tempArray)[instr_ptr->numTokens - 2] = NULL;
 			free(instr_ptr->tokens);
 			instr_ptr->tokens = tempArray;
-			//printf("Number of Tokens 1: %d\n", instr_ptr->numTokens);
 			instr_ptr->numTokens = instr_ptr->numTokens - 1;
-			//printf("After Allocation:\n");
-			//printf("Number of Tokens 2: %d\n", instr_ptr->numTokens);
-			//printTokens(instr_ptr);
-			//printf("TOKEN COUNT AFTER ALLOCATION: %d\n", (sizeof(instr_ptr->tokens)) / (sizeof(char *)));
 		}
 
 		if (strcmp((instr_ptr->tokens)[0], "echo") == 0) {
@@ -362,14 +342,18 @@ void inputAction(instruction* instr_ptr, struct Queue* queue, int *cc) {
 			*cc = tempint + 1;
 		}
 		else if (strcmp((instr_ptr->tokens)[0], "jobs") == 0) {
-			int i;
+			int i, j;
 			if (isEmpty(queue)) {
 				printf("All background processes complete\n");
 			}
 			else {
 				for (i = 0; i < queue->size; i++) {
-					printf("[%d]+ [%d] [%s]\n", queue->array[i].PIQ, queue->array[i].PID, queue->array[i].command[0]);
-					// need to create command print function
+					printf("[%d]+ [%d] [", queue->array[i].PIQ, queue->array[i].PID);
+					for (j = 0; i < queue->array[i].size - 1; j++) {
+						printf("%s ", queue->array[i].command[j]);
+					}
+					printf("]\n");
+					dequeue(queue);
 				}
 			}
 			// Adds to command counter
