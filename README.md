@@ -39,4 +39,8 @@ Known Bugs:<br/>
   commands to print when the processes are finished there is a loss of<br/>
   memory and nothing will print from the array. This is most likely a<br/>
   pointer issue we did not have enough time to fix.
+  4) Double piping not implemented. Found out how to do it at the last minute, but with minor 
+  seq faults and did not have time to fix. 
+  5) some pipes print as should, others for example, when "wc" is included (one example being: "ls | wc"), the result does 
+  not print until user exits the program. After the program ends, then the wc result prints.
   
