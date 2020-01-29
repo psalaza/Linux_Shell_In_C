@@ -26,3 +26,8 @@ Division of Labor:<br/>
   Spencer Lewis: Set up github (parsing file), Env Variables,<br/>
   Prompt, Background Processing, exit & jobs commands<br/>
   Comments and Documentation<br/>
+  
+Known Bugs:<br/>
+  1) Extra Spaces - Adding extra spaces to the end of a command<br/>
+  can cause the parser to misread the command<br/>
+  2) 
