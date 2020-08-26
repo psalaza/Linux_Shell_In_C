@@ -1,5 +1,5 @@
 # OpSys1
-Project 1: Implementing a Shell
+Project 1: Implementing a Linux Shell
 
 Group Members: Charles Harris, Pedro Salazar, Spencer Lewis
 
